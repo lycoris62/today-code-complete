@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 public class TccApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(TccApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TccApplication.class, args);
+    }
 }

@@ -29,7 +29,7 @@ public class Post extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
-    private String comment;
+    private String content;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();
@@ -38,8 +38,8 @@ public class Post extends BaseEntity {
     private List<PostLike> postLikeList = new ArrayList<>();
 
     @Builder
-    private Post(User user, String comment) {
+    private Post(User user, String content) {
         this.user = user;
-        this.comment = comment;
+        this.content = content;
     }
 }

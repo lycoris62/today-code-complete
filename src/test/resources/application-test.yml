@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+
+jwt:
+  secret:
+    key: aGVsbG9ldmVyeW9uZW15bmFtZWlzamlndW5pY2V0b21lZXR5b3VpYW1maW5ldGhhbmt5b3VhbmR5b3U=

@@ -8,20 +8,17 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    // user 1XXX
-    NOT_EXIST_USER(HttpStatus.BAD_REQUEST, "1000", "사용자가 없습니다.")
+    // user
 
-    // post 2XXX
+    // post
 
-    // comment 3XXX
+    // comment
 
-    // admin 4XXX
+    // admin
 
-    // global 5XXX
-    ;
+    // global
+    NOT_LOGIN(HttpStatus.UNAUTHORIZED, "5000", "로그인이 필요합니다.");
     private final HttpStatus status;
     private final String code;
     private final String message;
-
-
 }

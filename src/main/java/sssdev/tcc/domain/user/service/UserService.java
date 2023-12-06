@@ -7,6 +7,7 @@ import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 public class UserService {
 
     public ProfileResponse getProfile(Long id) {
+
         return null;
     }
 }

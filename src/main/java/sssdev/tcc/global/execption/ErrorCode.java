@@ -1,22 +1,27 @@
 package sssdev.tcc.global.execption;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
+@RequiredArgsConstructor
 public enum ErrorCode {
 
-    // user
+    // user 1XXX
+    NOT_EXIST_USER(HttpStatus.BAD_REQUEST, "1000", "사용자가 없습니다.")
 
-    // post
+    // post 2XXX
 
-    // comment
+    // comment 3XXX
 
-    // admin
+    // admin 4XXX
 
-    // global
+    // global 5XXX
     ;
-    private HttpStatus status;
-    private String code;
-    private String message;
+    private final HttpStatus status;
+    private final String code;
+    private final String message;
+
+
 }

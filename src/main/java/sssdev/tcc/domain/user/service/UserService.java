@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
 
 @RequiredArgsConstructor
 @Service
@@ -14,7 +16,8 @@ public class UserService {
     private final FollowRepository followRepository;
 
     public ProfileResponse getProfile(Long id) {
-        var user = userRepository.findById(id).orElseThrow();
+        var user = userRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
         return ProfileResponse.of(user, followRepository);
     }
 }

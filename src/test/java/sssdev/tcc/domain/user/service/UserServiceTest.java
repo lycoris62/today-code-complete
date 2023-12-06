@@ -1,6 +1,7 @@
 package sssdev.tcc.domain.user.service;
 
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
@@ -16,6 +17,8 @@ import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
 
 @DisplayName("유저 서비스 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -43,13 +46,8 @@ class UserServiceTest {
             var userId = 1L;
             var followerCount = 1L;
             var followingCount = 10L;
-            var user = User.builder()
-                .password("test")
-                .username("username")
-                .profileUrl("/api/test.png")
-                .description("description")
-                .nickname("핑크 공주")
-                .build();
+            var user = User.builder().password("test").username("username")
+                .profileUrl("/api/test.png").description("description").nickname("핑크 공주").build();
             setField(user, "id", userId);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -63,6 +61,18 @@ class UserServiceTest {
             then(profile.followingCount()).isEqualTo(followingCount);
             then(profile.profileImageUrl()).isEqualTo(user.getProfileUrl());
             then(profile.description()).isEqualTo(user.getDescription());
+        }
+
+        @DisplayName("없는 유저의 프로필 조회시 실패")
+        @Test
+        void fail() {
+            // given
+            var userId = 1L;
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.getProfile(userId));
+            // then
+            then(ex.getCode()).isEqualTo(ErrorCode.NOT_EXIST_USER);
         }
     }
 }

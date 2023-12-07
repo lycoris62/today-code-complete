@@ -15,7 +15,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sssdev.tcc.domain.comment.domain.Comment;
+import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.model.BaseEntity;
+import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.user.domain.User;
 
 @Getter
@@ -41,5 +43,17 @@ public class Post extends BaseEntity {
     private Post(User user, String content) {
         this.user = user;
         this.content = content;
+    }
+
+    public long getCommentCount(CommentRepository repository) {
+        return repository.countByPostId(getId());
+    }
+
+    public long getLikeCount(PostLikeRepository repository) {
+        return repository.countByPostId(getId());
+    }
+
+    public boolean getIsLike(PostLikeRepository repository) {
+        return repository.existsByUserIdAndPostId(user.getId(), getId());
     }
 }

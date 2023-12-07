@@ -10,6 +10,7 @@ public enum ErrorCode {
 
     // user 1XXX
     NOT_EXIST_USER(HttpStatus.BAD_REQUEST, "1000", "사용자가 없습니다."),
+    CHECK_USER(HttpStatus.BAD_REQUEST, "1001", "본인이 아닙니다."),
 
     // post 2XXX
 
@@ -17,7 +18,7 @@ public enum ErrorCode {
 
     // admin 4XXX
 
-    // global
+    // global 5XXX
     NOT_LOGIN(HttpStatus.UNAUTHORIZED, "5000", "로그인이 필요합니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "5001", "권한이 없습니다.");
 

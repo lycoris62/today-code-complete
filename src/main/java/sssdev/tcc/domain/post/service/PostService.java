@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
+import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
 
 @Slf4j
@@ -14,6 +16,8 @@ import sssdev.tcc.domain.post.repository.PostRepository;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
 
     /**
      * 모든 게시글을 가져옴. query 값이 존재하면 query 포함 게시글을 가져옴
@@ -22,10 +26,10 @@ public class PostService {
 
         if (query.isBlank()) {
             return postRepository.findAll(pageable)
-                .map(PostDetailResponse::of);
+                .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
         }
 
         return postRepository.findAllByContentContaining(query, pageable)
-            .map(PostDetailResponse::of);
+            .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
     }
 }

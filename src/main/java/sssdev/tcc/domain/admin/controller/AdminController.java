@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.post.service.PostService;
@@ -66,6 +68,17 @@ public class AdminController {
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
+            .build());
+    }
+
+    @PatchMapping("/posts/{id}")
+    public ResponseEntity<?> updatePost(@PathVariable(name = "id") Long id,
+        @RequestBody AdminPostUpdateRequest request) {
+        AdminPostUpdateResponse body = postService.updatePost(id, request);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .data(body)
             .build());
     }
 }

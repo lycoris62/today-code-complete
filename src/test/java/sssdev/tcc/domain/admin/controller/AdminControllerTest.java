@@ -1,6 +1,7 @@
 package sssdev.tcc.domain.admin.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,9 +20,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
+import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -33,6 +37,8 @@ class AdminControllerTest extends ControllerTest {
 
     @MockBean
     UserService userService;
+    @MockBean
+    PostService postService;
     @MockBean
     StatusUtil statusUtil;
 
@@ -154,6 +160,7 @@ class AdminControllerTest extends ControllerTest {
         }
     }
 
+
     @DisplayName("게시글 삭제 테스트")
     @Nested
     class PostDelete {
@@ -170,6 +177,39 @@ class AdminControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다.")
+                );
+        }
+    }
+
+    @DisplayName("게시글 수정 테스트")
+    @Nested
+    class CommentUpdate {
+
+        @DisplayName("성공")
+        @Test
+        void comment_update_success() throws Exception {
+            // given
+            var postId = 1L;
+            var request = AdminPostUpdateRequest.builder()
+                .content("change content")
+                .build();
+            var response = AdminPostUpdateResponse.builder()
+                .id(postId)
+                .content(request.content())
+                .build();
+
+            given(postService.updatePost(eq(postId), any())).willReturn(response);
+            // when // then
+            mockMvc.perform(patch("/api/admin/posts/{id}", postId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.content").value(response.content())
                 );
         }
     }

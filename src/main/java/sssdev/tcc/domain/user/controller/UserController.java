@@ -1,5 +1,6 @@
 package sssdev.tcc.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.service.UserService;
+import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.common.dto.response.RootResponse;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
+import sssdev.tcc.global.util.StatusUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,6 +24,7 @@ import sssdev.tcc.global.common.dto.response.RootResponse;
 public class UserController {
 
     private final UserService userService;
+    private final StatusUtil statusUtil;
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getProfile(@PathVariable(name = "id") Long id) {
@@ -33,8 +39,14 @@ public class UserController {
     }
 
     @PostMapping("/follow")
-    public ResponseEntity<?> follow(@RequestBody UserFollowRequest request) {
-        var body = userService.follow(request);
+    public ResponseEntity<?> follow(@RequestBody UserFollowRequest reqBody,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        if (!loginUser.id().equals(reqBody.fromUserId())) {
+            throw new ServiceException(ErrorCode.UNAUTHORIZED);
+        }
+        var body = userService.follow(reqBody);
         return ResponseEntity.ok(
             RootResponse.builder()
                 .code("200")

@@ -67,10 +67,7 @@ class FollowRepositoryTest extends RepositoryTest {
             .nickname("핑크 공주")
             .build());
 
-        followRepository.save(Follow.builder()
-            .from(userA)
-            .to(userB)
-            .build());
+        userA.follow(userB);
         // when
         long followingCount = userA.getFollowingCount(followRepository);
         // then

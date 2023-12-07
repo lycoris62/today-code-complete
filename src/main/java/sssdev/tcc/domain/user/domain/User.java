@@ -1,10 +1,14 @@
 package sssdev.tcc.domain.user.domain;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +41,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String profileUrl;
 
+    @OneToMany(mappedBy = "to", cascade = CascadeType.ALL)
+    private List<Follow> followingList = new ArrayList<>();
+
     @Builder
     private User(String username, String password, String nickname, String description,
         String profileUrl) {
@@ -67,5 +74,13 @@ public class User extends BaseEntity {
 
     public long getFollowerCount(FollowRepository repository) {
         return repository.countFollowerByToId(getId());
+    }
+
+    public void follow(User to) {
+        Follow follow = Follow.builder()
+            .from(this)
+            .to(to)
+            .build();
+        followingList.add(follow);
     }
 }

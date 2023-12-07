@@ -153,4 +153,24 @@ class AdminControllerTest extends ControllerTest {
                 );
         }
     }
+
+    @DisplayName("게시글 삭제 테스트")
+    @Nested
+    class PostDelete {
+
+        @DisplayName("성공")
+        @Test
+        void delete_post_success() throws Exception {
+            // given
+            var postId = 1L;
+            // when // then
+            mockMvc.perform(delete("/api/admin/posts/{id}", postId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
+                );
+        }
+    }
 }

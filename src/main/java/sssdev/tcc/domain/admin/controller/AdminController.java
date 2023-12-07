@@ -16,6 +16,7 @@ import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
+import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.response.RootResponse;
 
@@ -26,6 +27,7 @@ public class AdminController {
 
     private final UserService userService;
     private final CommentService commentService;
+    private final PostService postService;
 
     @PatchMapping("/users")
     public ResponseEntity<?> updateProfile(@RequestBody AdminUserUpdateRequest body) {
@@ -52,6 +54,15 @@ public class AdminController {
     @DeleteMapping("/comments/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable(name = "id") Long id) {
         commentService.deleteComment(id);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
+    }
+
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable(name = "id") Long id) {
+        commentService.deletePost(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")

@@ -1,4 +1,8 @@
 spring:
+
+  application:
+    name: monitoring
+
   datasource:
     username: sa
     driver-class-name: org.h2.Driver
@@ -14,3 +18,15 @@ spring:
   h2:
     console:
       enabled: true
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus

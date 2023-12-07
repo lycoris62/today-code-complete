@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
+import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -172,7 +172,7 @@ class UserControllerTest extends ControllerTest {
             var userId = 1L;
             var response = new ProfileResponse("test2", 100, 200, "/api/test/image.png",
                 "description2");
-            var requst = new ProfileUpdateRequest("test2", "description2");
+            var requst = new UserProfileUpdateRequest("test2", "description2");
             var sesstion = new LoginUser(userId);
 
             String json = objectMapper.writeValueAsString(requst);
@@ -205,7 +205,7 @@ class UserControllerTest extends ControllerTest {
         void fail_1() throws Exception {
 
             var userId = 1L;
-            var requst = new ProfileUpdateRequest("test2", null);
+            var requst = new UserProfileUpdateRequest("test2", null);
             var sesstion = new LoginUser(userId);
 
             String json = objectMapper.writeValueAsString(requst);

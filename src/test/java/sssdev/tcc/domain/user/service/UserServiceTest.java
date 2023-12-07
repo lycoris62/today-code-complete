@@ -17,9 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import sssdev.tcc.domain.user.domain.User;
-import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
+import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
@@ -129,7 +129,7 @@ class UserServiceTest {
                 .build();
             setField(user, "id", userId);
 
-            var request = new ProfileUpdateRequest("닉네임", null);
+            var request = new UserProfileUpdateRequest("닉네임", null);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
@@ -158,7 +158,7 @@ class UserServiceTest {
                 .build();
             setField(user, "id", userId);
 
-            var request = new ProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
+            var request = new UserProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
@@ -187,7 +187,7 @@ class UserServiceTest {
                 .build();
             setField(user, "id", userId);
 
-            var request = new ProfileUpdateRequest("닉네임", "아 배고프다 밥먹고 싶다");
+            var request = new UserProfileUpdateRequest("닉네임", "아 배고프다 밥먹고 싶다");
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
@@ -216,7 +216,7 @@ class UserServiceTest {
                 .build();
             setField(user, "id", userId);
 
-            var request = new ProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
+            var request = new UserProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
 
             given(userRepository.findById(userId2)).willThrow(new ServiceException(NOT_EXIST_USER));
             // when

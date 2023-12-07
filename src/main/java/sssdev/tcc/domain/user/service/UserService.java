@@ -5,6 +5,8 @@ import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
@@ -30,10 +32,10 @@ public class UserService {
     }
 
     @Transactional
-    public ProfileResponse updateProfile(ProfileUpdateRequest requst, Long id) {
-        User user = userRepository.findById(id)
+    public ProfileResponse updateProfile(ProfileUpdateRequest request, Long userId) {
+        User user = userRepository.findById(userId)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
-        user.update(requst);
+        user.update(request);
         return ProfileResponse.of(user, followRepository);
     }
 
@@ -54,5 +56,10 @@ public class UserService {
             to.getFollowerCount(followRepository),
             to.getFollowingCount(followRepository)
         );
+    }
+
+    // todo
+    public AdminUserUpdateResponse updateProfile(AdminUserUpdateRequest body) {
+        return null;
     }
 }

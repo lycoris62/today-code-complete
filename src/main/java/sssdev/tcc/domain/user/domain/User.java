@@ -27,9 +27,6 @@ public class User extends BaseEntity {
     private String username;
 
     @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
     private String nickname;
 
     @Column(nullable = false)
@@ -45,10 +42,9 @@ public class User extends BaseEntity {
     private List<Follow> followingList = new ArrayList<>();
 
     @Builder
-    private User(String username, String password, String nickname, String description,
+    private User(String username, String nickname, String description,
         String profileUrl) {
         this.username = username;
-        this.password = password;
         this.nickname = nickname;
         this.description = description;
         this.profileUrl = profileUrl;

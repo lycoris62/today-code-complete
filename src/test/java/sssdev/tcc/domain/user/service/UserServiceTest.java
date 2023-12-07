@@ -54,7 +54,6 @@ class UserServiceTest {
             var followerCount = 1L;
             var followingCount = 10L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -94,7 +93,6 @@ class UserServiceTest {
             var userId2 = 2L;
             var userId = 1L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -124,7 +122,6 @@ class UserServiceTest {
             var followerCount = 1L;
             var followingCount = 10L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -154,7 +151,6 @@ class UserServiceTest {
             var followerCount = 1L;
             var followingCount = 10L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -184,7 +180,6 @@ class UserServiceTest {
             var followerCount = 1L;
             var followingCount = 10L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -214,7 +209,6 @@ class UserServiceTest {
             var userId2 = 2L;
             var userId = 1L;
             var user = User.builder()
-                .password("test")
                 .username("username")
                 .profileUrl("/api/test.png")
                 .description("description")
@@ -235,8 +229,6 @@ class UserServiceTest {
             assertEquals("1000", exception.getCode().getCode());
             assertEquals(HttpStatus.BAD_REQUEST, exception.getCode().getStatus());
         }
-
-
     }
 
     @DisplayName("팔로우")
@@ -257,7 +249,6 @@ class UserServiceTest {
                 .nickname("test")
                 .description("description")
                 .profileUrl("/api/test.png")
-                .password("sample")
                 .build();
             setField(from, "id", fromUserId);
 
@@ -265,7 +256,6 @@ class UserServiceTest {
                 .nickname("test")
                 .description("description")
                 .profileUrl("/api/test.png")
-                .password("sample")
                 .build();
             setField(to, "id", toUserId);
 
@@ -293,7 +283,6 @@ class UserServiceTest {
                 .nickname("test")
                 .description("description")
                 .profileUrl("/api/test.png")
-                .password("sample")
                 .build();
             setField(to, "id", toUserId);
 
@@ -317,7 +306,6 @@ class UserServiceTest {
                 .nickname("test")
                 .description("description")
                 .profileUrl("/api/test.png")
-                .password("sample")
                 .build();
             setField(from, "id", fromUserId);
 

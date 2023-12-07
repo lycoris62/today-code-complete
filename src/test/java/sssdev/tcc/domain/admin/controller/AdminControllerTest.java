@@ -2,6 +2,7 @@ package sssdev.tcc.domain.admin.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -129,6 +130,26 @@ class AdminControllerTest extends ControllerTest {
                         .value(profileResponse.profileImageUrl()),
                     jsonPath("$.data.content[?(@.id== '%s')].description", profileResponse.id())
                         .value(profileResponse.description())
+                );
+        }
+    }
+
+    @DisplayName("댓글 삭제 테스트")
+    @Nested
+    class CommentDelete {
+
+        @DisplayName("성공")
+        @Test
+        void delete_comment_success() throws Exception {
+            // given
+            var commentId = 1L;
+            // when // then
+            mockMvc.perform(delete("/api/admin/comments/{id}", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }

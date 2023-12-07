@@ -117,9 +117,6 @@ class UserControllerTest extends ControllerTest {
             var toUserId = 2L;
             var request = new UserFollowRequest(fromUserId, toUserId);
 
-            var followerCount = 10L;
-            var followingCount = 11L;
-            var response = new UserFollowResponse(toUserId, followerCount, followingCount);
             given(userService.follow(request)).willThrow(new ServiceException(NOT_EXIST_USER));
             given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(fromUserId));
             // when // then

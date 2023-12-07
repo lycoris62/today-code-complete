@@ -53,4 +53,8 @@ public class User extends BaseEntity {
     public long getFollowerCount(FollowRepository repository) {
         return repository.countFollowerByToId(getId());
     }
+
+    public void follow(User to) {
+
+    }
 }

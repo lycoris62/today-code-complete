@@ -2,6 +2,7 @@ package sssdev.tcc.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
@@ -23,8 +24,17 @@ public class UserService {
         return ProfileResponse.of(user, followRepository);
     }
 
-    // todo
     public UserFollowResponse follow(UserFollowRequest request) {
-        return null;
+        User from = userRepository.findById(request.fromUserId())
+            .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
+        User to = userRepository.findById(request.toUserId())
+            .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
+
+        from.follow(to);
+        return new UserFollowResponse(
+            to.getId(),
+            to.getFollowerCount(followRepository),
+            to.getFollowingCount(followRepository)
+        );
     }
 }

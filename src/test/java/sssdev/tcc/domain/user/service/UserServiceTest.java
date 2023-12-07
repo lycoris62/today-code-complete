@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
+import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
@@ -73,6 +75,50 @@ class UserServiceTest {
                 () -> userService.getProfile(userId));
             // then
             then(ex.getCode()).isEqualTo(ErrorCode.NOT_EXIST_USER);
+        }
+    }
+
+    @DisplayName("팔로우")
+    @Nested
+    class FollowFunction {
+
+        @DisplayName("성공")
+        @Test
+        void success() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var from = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(from, "id", fromUserId);
+
+            var to = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(to, "id", toUserId);
+
+            given(userRepository.findById(fromUserId)).willReturn(Optional.of(from));
+            given(userRepository.findById(toUserId)).willReturn(Optional.of(to));
+            given(followRepository.countFollowerByToId(toUserId)).willReturn(followerCount);
+            given(followRepository.countFollowingByFromId(toUserId)).willReturn(followingCount);
+            // when
+            UserFollowResponse result = userService.follow(request);
+            // then
+            then(result.followerCount()).isEqualTo(followerCount);
+            then(result.followingCount()).isEqualTo(followingCount);
+            then(result.toUserId()).isEqualTo(toUserId);
+
         }
     }
 }

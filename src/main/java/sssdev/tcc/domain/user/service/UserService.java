@@ -3,8 +3,12 @@ package sssdev.tcc.domain.user.service;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.user.domain.User;
@@ -25,7 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
 
-    public ProfileResponse getProfile(Long id) {
+    public ProfileResponse getProfileList(Long id) {
         var user = userRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
         return ProfileResponse.of(user, followRepository);
@@ -60,6 +64,11 @@ public class UserService {
 
     // todo
     public AdminUserUpdateResponse updateProfile(AdminUserUpdateRequest body) {
+        return null;
+    }
+
+    public Page<ProfileListItem> getProfileList(AdminUserListGetRequest request,
+        Pageable pageable) {
         return null;
     }
 }

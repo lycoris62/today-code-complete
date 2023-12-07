@@ -45,9 +45,9 @@ class UserControllerTest extends ControllerTest {
         void success() throws Exception {
             // given
             var userId = 1L;
-            var response = new ProfileResponse("test", 100, 200, "/api/test/image.png",
+            var response = new ProfileResponse(1L, "test", 100L, 200L, "/api/test/image.png",
                 "description");
-            given(userService.getProfile(userId)).willReturn(response);
+            given(userService.getProfileList(userId)).willReturn(response);
             // when // then
             mockMvc.perform(get("/api/users/{userId}/profile", userId))
                 .andDo(print())
@@ -55,6 +55,7 @@ class UserControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.id").value(response.id()),
                     jsonPath("$.data.nickname").value(response.nickname()),
                     jsonPath("$.data.followerCount").value(response.followerCount()),
                     jsonPath("$.data.followingCount").value(response.followingCount()),
@@ -68,7 +69,8 @@ class UserControllerTest extends ControllerTest {
         void fail_1() throws Exception {
             // given
             var userId = 1L;
-            given(userService.getProfile(userId)).willThrow(new ServiceException(NOT_EXIST_USER));
+            given(userService.getProfileList(userId)).willThrow(
+                new ServiceException(NOT_EXIST_USER));
             // when // then
             mockMvc.perform(get("/api/users/{userId}/profile", userId))
                 .andDo(print())
@@ -182,7 +184,7 @@ class UserControllerTest extends ControllerTest {
         void success() throws Exception {
             // given
             var userId = 1L;
-            var response = new ProfileResponse("test2", 100, 200, "/api/test/image.png",
+            var response = new ProfileResponse(1L, "test2", 100L, 200L, "/api/test/image.png",
                 "description2");
             var request = new ProfileUpdateRequest("test2", "description2");
 
@@ -206,6 +208,7 @@ class UserControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.id").value(response.id()),
                     jsonPath("$.data.nickname").value(response.nickname()),
                     jsonPath("$.data.followerCount").value(response.followerCount()),
                     jsonPath("$.data.followingCount").value(response.followingCount()),

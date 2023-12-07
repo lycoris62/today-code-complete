@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getProfile(@PathVariable(name = "id") Long id) {
-        ProfileResponse response = userService.getProfile(id);
+        ProfileResponse response = userService.getProfileList(id);
         return ResponseEntity.ok(
             RootResponse.builder()
                 .code("200")

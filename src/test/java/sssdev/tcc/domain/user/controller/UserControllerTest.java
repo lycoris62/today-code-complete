@@ -178,6 +178,7 @@ class UserControllerTest extends ControllerTest {
             String json = objectMapper.writeValueAsString(requst);
 
             given(userService.updateProfile(requst, userId)).willReturn(response);
+            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(userId));
             // when // then
             mockMvc.perform(patch("/api/users/profile")
                     .content(json)
@@ -211,6 +212,7 @@ class UserControllerTest extends ControllerTest {
 
             given(userService.updateProfile(requst, userId)).willThrow(
                 new ServiceException(CHECK_USER));
+            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(userId));
             // when // then
             mockMvc.perform(patch("/api/users/profile")
                     .content(json)

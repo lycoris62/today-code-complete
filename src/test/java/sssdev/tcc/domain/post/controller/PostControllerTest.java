@@ -13,14 +13,17 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
+import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.support.ControllerTest;
@@ -30,6 +33,12 @@ class PostControllerTest extends ControllerTest {
 
     @MockBean
     PostService postService;
+
+    @Mock
+    CommentRepository commentRepository;
+
+    @Mock
+    PostLikeRepository postLikeRepository;
 
     @Nested
     @DisplayName("게시글 목록 조회")
@@ -42,8 +51,10 @@ class PostControllerTest extends ControllerTest {
             User user = User.builder().username("username").build();
             Post post1 = Post.builder().content("content01").user(user).build();
             Post post2 = Post.builder().content("content02").user(user).build();
-            PostDetailResponse postDetail1 = PostDetailResponse.of(post1);
-            PostDetailResponse postDetail2 = PostDetailResponse.of(post2);
+            PostDetailResponse postDetail1 = PostDetailResponse.of(post1, commentRepository,
+                postLikeRepository);
+            PostDetailResponse postDetail2 = PostDetailResponse.of(post2, commentRepository,
+                postLikeRepository);
             Pageable pageable = PageRequest.of(0, 10);
 
             Page<PostDetailResponse> pageResult = new PageImpl<>(
@@ -52,6 +63,8 @@ class PostControllerTest extends ControllerTest {
                 2);
 
             given(postService.getPosts(any(Pageable.class), anyString())).willReturn(pageResult);
+
+            String jsonPath = "$.data.content[?(@.content == '%s')]";
 
             // when // then
             mockMvc.perform(get("/api/posts")
@@ -62,12 +75,13 @@ class PostControllerTest extends ControllerTest {
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.data.content.size()").value(2),
-                    jsonPath("$.data.content[0].username").value(postDetail1.username()),
-                    jsonPath("$.data.content[0].nickname").value(postDetail1.nickname()),
-                    jsonPath("$.data.content[0].commentCount").value(postDetail1.commentCount()),
-                    jsonPath("$.data.content[0].likeCount").value(postDetail1.likeCount()),
-                    jsonPath("$.data.content[0].content").value(postDetail1.content()),
-                    jsonPath("$.data.content[1].content").value(postDetail2.content())
+                    jsonPath(jsonPath + ".username", "content01").value(postDetail1.username()),
+                    jsonPath(jsonPath + ".nickname", "content01").value(postDetail1.nickname()),
+                    jsonPath(jsonPath + ".commentCount", "content01").value(
+                        postDetail1.commentCount()),
+                    jsonPath(jsonPath + ".likeCount", "content01").value(postDetail1.likeCount()),
+                    jsonPath(jsonPath + ".content", "content01").value(postDetail1.content()),
+                    jsonPath(jsonPath + ".content", "content02").value(postDetail2.content())
                 );
         }
 
@@ -79,8 +93,10 @@ class PostControllerTest extends ControllerTest {
             User user = User.builder().username("username").build();
             Post post1 = Post.builder().content("content01").user(user).build();
             Post post2 = Post.builder().content("content02").user(user).build();
-            PostDetailResponse postDetail1 = PostDetailResponse.of(post1);
-            PostDetailResponse postDetail2 = PostDetailResponse.of(post2);
+            PostDetailResponse postDetail1 = PostDetailResponse.of(post1, commentRepository,
+                postLikeRepository);
+            PostDetailResponse postDetail2 = PostDetailResponse.of(post2, commentRepository,
+                postLikeRepository);
             Pageable pageable = PageRequest.of(0, 10);
 
             List<PostDetailResponse> filteredPostList = Stream.of(postDetail1, postDetail2)
@@ -92,6 +108,8 @@ class PostControllerTest extends ControllerTest {
 
             given(postService.getPosts(any(Pageable.class), anyString())).willReturn(pageResult);
 
+            String jsonPath = "$.data.content[?(@.content == '%s')]";
+
             // when // then
             mockMvc.perform(get("/api/posts")
                     .accept(MediaType.APPLICATION_JSON)
@@ -102,13 +120,13 @@ class PostControllerTest extends ControllerTest {
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.data.content.size()").value(1),
-                    jsonPath("$.data.content[0].username").value(postDetail1.username()),
-                    jsonPath("$.data.content[0].nickname").value(postDetail1.nickname()),
-                    jsonPath("$.data.content[0].commentCount").value(postDetail1.commentCount()),
-                    jsonPath("$.data.content[0].likeCount").value(postDetail1.likeCount()),
-                    jsonPath("$.data.content[0].content").value(postDetail1.content())
+                    jsonPath(jsonPath + ".username", "content01").value(postDetail1.username()),
+                    jsonPath(jsonPath + ".nickname", "content01").value(postDetail1.nickname()),
+                    jsonPath(jsonPath + ".commentCount", "content01").value(
+                        postDetail1.commentCount()),
+                    jsonPath(jsonPath + ".likeCount", "content01").value(postDetail1.likeCount()),
+                    jsonPath(jsonPath + ".content", "content01").value(postDetail1.content())
                 );
         }
     }
-
 }

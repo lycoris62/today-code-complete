@@ -1,11 +1,17 @@
 package sssdev.tcc.domain.user.service;
 
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserPasswordUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.execption.ServiceException;
 
 @RequiredArgsConstructor
 @Service
@@ -15,11 +21,21 @@ public class UserService {
     private final FollowRepository followRepository;
 
     public ProfileResponse getProfile(Long id) {
-        var user = userRepository.findById(id).orElseThrow();
+        var user = userRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
         return ProfileResponse.of(user, followRepository);
     }
 
-    public ProfileResponse updateProfile(ProfileUpdateRequest requst, Long userId) {
+    @Transactional
+    public ProfileResponse updateProfile(ProfileUpdateRequest requst, Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
+        user.update(requst);
+        return ProfileResponse.of(user, followRepository);
+    }
+
+    public ProfileResponse changePassword(UserPasswordUpdateRequest requst, long userId) {
+
         return null;
     }
 }

@@ -2,6 +2,7 @@ package sssdev.tcc.domain.user.controller;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserPasswordUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -90,7 +92,7 @@ class UserControllerTest extends ControllerTest {
 
             given(userService.updateProfile(requst, userId)).willReturn(response);
             // when // then
-            mockMvc.perform(post("/api/users/profile")
+            mockMvc.perform(patch("/api/users/profile")
                     .content(json)
                     .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
                     .accept(MediaType.APPLICATION_JSON)
@@ -115,7 +117,7 @@ class UserControllerTest extends ControllerTest {
         void fail_1() throws Exception {
 
             var userId = 1L;
-            var requst = new ProfileUpdateRequest("test2", "description2");
+            var requst = new ProfileUpdateRequest("test2", null);
             var sesstion = new LoginUser(userId);
 
             String json = objectMapper.writeValueAsString(requst);
@@ -123,7 +125,7 @@ class UserControllerTest extends ControllerTest {
             given(userService.updateProfile(requst, userId)).willThrow(
                 new ServiceException(CHECK_USER));
             // when // then
-            mockMvc.perform(post("/api/users/profile")
+            mockMvc.perform(patch("/api/users/profile")
                     .content(json)
                     .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
                     .accept(MediaType.APPLICATION_JSON)
@@ -135,6 +137,44 @@ class UserControllerTest extends ControllerTest {
                     status().isBadRequest(),
                     jsonPath("$.code").value("1001"),
                     jsonPath("$.message").value("본인이 아닙니다.")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("비밀번호 변경")
+    class PasswordUpdate {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            var userId = 1L;
+            var requst = new UserPasswordUpdateRequest("12345678", "qwer1234", "qwer1234");
+            var response = new ProfileResponse("test", 100, 200, "/api/test/image.png",
+                "description");
+            var sesstion = new LoginUser(userId);
+
+            given(userService.changePassword(requst, userId)).willReturn(response);
+            String json = objectMapper.writeValueAsString(requst);
+            // when // then
+            mockMvc.perform(post("/api/users/profile")
+                    .content(json)
+                    .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .sessionAttr("login_user", sesstion)
+
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.nickname").value(response.nickname()),
+                    jsonPath("$.data.followerCount").value(response.followerCount()),
+                    jsonPath("$.data.followingCount").value(response.followingCount()),
+                    jsonPath("$.data.profileImageUrl").value(response.profileImageUrl()),
+                    jsonPath("$.data.description").value(response.description())
                 );
         }
     }

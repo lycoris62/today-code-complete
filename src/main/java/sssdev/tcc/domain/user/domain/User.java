@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sssdev.tcc.domain.model.BaseEntity;
+import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 
 @Getter
@@ -44,6 +45,20 @@ public class User extends BaseEntity {
         this.nickname = nickname;
         this.description = description;
         this.profileUrl = profileUrl;
+    }
+
+    public void update(ProfileUpdateRequest request) {
+        if (request.nickname() != null) {
+            this.nickname = request.nickname();
+        }
+        if (request.description() != null) {
+            this.description = request.description();
+        }
+    }
+
+    public void urlUpdate(ProfileUpdateRequest request) {
+        this.nickname = request.nickname();
+        this.description = request.description();
     }
 
     public long getFollowingCount(FollowRepository repository) {

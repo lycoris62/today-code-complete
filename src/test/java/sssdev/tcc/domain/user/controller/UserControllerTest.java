@@ -2,6 +2,7 @@ package sssdev.tcc.domain.user.controller;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
+import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.execption.ServiceException;
@@ -62,6 +66,39 @@ class UserControllerTest extends ControllerTest {
                     status().isBadRequest(),
                     jsonPath("$.code").value("1000"),
                     jsonPath("$.message").value("사용자가 없습니다.")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("팔로우 요청")
+    class FollowRequest {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 2L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var followerCount = 10L;
+            var followingCount = 11L;
+            var response = new UserFollowResponse(toUserId, followerCount, followingCount);
+            given(userService.follow(request)).willReturn(response);
+            // when // then
+            mockMvc.perform(post("/api/users/follow")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.toUserId").value(response.toUserId()),
+                    jsonPath("$.data.followerCount").value(response.followerCount()),
+                    jsonPath("$.data.followingCount").value(response.followingCount())
                 );
         }
     }

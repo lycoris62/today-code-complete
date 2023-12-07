@@ -101,5 +101,30 @@ class UserControllerTest extends ControllerTest {
                     jsonPath("$.data.followingCount").value(response.followingCount())
                 );
         }
+
+        @DisplayName("존재하지 않은 유저를 팔로우하는 경우")
+        @Test
+        void not_exist_user_follow() throws Exception {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 2L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var followerCount = 10L;
+            var followingCount = 11L;
+            var response = new UserFollowResponse(toUserId, followerCount, followingCount);
+            given(userService.follow(request)).willThrow(new ServiceException(NOT_EXIST_USER));
+            // when // then
+            mockMvc.perform(post("/api/users/follow")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.code").value("1000"),
+                    jsonPath("$.message").value("사용자가 없습니다.")
+                );
+        }
     }
 }

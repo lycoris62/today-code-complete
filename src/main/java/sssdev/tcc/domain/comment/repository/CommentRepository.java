@@ -5,4 +5,5 @@ import sssdev.tcc.domain.comment.domain.Comment;
 
 public interface CommentRepository extends CommentReadRepository, JpaRepository<Comment, Long> {
 
+    long countByPostId(Long postId);
 }

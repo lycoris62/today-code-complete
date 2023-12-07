@@ -118,7 +118,56 @@ class UserServiceTest {
             then(result.followerCount()).isEqualTo(followerCount);
             then(result.followingCount()).isEqualTo(followingCount);
             then(result.toUserId()).isEqualTo(toUserId);
+        }
 
+        @DisplayName("팔로우하는 유저가 없는 경우")
+        @Test
+        void fail_not_exist_follower() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var to = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(to, "id", toUserId);
+
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.follow(request));
+            ErrorCode code = ex.getCode();
+            // then
+            then(code).isEqualTo(ErrorCode.NOT_EXIST_USER);
+        }
+
+        @DisplayName("팔로우당하는 유저가 없는 경우")
+        @Test
+        void fail_not_exist_following() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var from = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(from, "id", fromUserId);
+
+            given(userRepository.findById(fromUserId)).willReturn(Optional.of(from));
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.follow(request));
+            ErrorCode code = ex.getCode();
+            // then
+            then(code).isEqualTo(ErrorCode.NOT_EXIST_USER);
         }
     }
+
 }

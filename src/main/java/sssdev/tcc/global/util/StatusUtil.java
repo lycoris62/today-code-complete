@@ -19,4 +19,14 @@ public class StatusUtil {
         }
         return (LoginUser) session.getAttribute(LOGIN_USER);
     }
+
+    public void login(LoginUser data, HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        session.setAttribute(LOGIN_USER, data);
+    }
+
+    public void clearSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(0);
+    }
 }

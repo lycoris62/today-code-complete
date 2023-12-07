@@ -1,8 +1,11 @@
 package sssdev.tcc.domain.user.service;
 
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.execption.ServiceException;
 
 @DisplayName("유저 서비스 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +31,7 @@ class UserServiceTest {
     UserRepository userRepository;
     @Mock
     FollowRepository followRepository;
+
     UserService userService;
 
     @BeforeEach
@@ -64,5 +71,160 @@ class UserServiceTest {
             then(profile.profileImageUrl()).isEqualTo(user.getProfileUrl());
             then(profile.description()).isEqualTo(user.getDescription());
         }
+
+        @DisplayName("유저의 프로필 조회 실패")
+        @Test
+        void fail() {
+            // given
+            var userId2 = 2L;
+            var userId = 1L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var user = User.builder()
+                .password("test")
+                .username("username")
+                .profileUrl("/api/test.png")
+                .description("description")
+                .nickname("핑크 공주")
+                .build();
+            setField(user, "id", userId);
+
+            given(userRepository.findById(userId2)).willThrow(new ServiceException(NOT_EXIST_USER));
+            // when
+
+            // then
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> userService.getProfile(userId2));
+
+            assertEquals("사용자가 없습니다.", exception.getCode().getMessage());
+            assertEquals("1000", exception.getCode().getCode());
+            assertEquals(HttpStatus.BAD_REQUEST, exception.getCode().getStatus());
+        }
+    }
+
+    @DisplayName("유저 프로필 수정")
+    @Nested
+    class updateProfile {
+
+        @DisplayName("닉네임 업데이트 성공)")
+        @Test
+        void success() {
+            var userId = 1L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var user = User.builder()
+                .password("test")
+                .username("username")
+                .profileUrl("/api/test.png")
+                .description("description")
+                .nickname("핑크 공주")
+                .build();
+            setField(user, "id", userId);
+
+            var request = new ProfileUpdateRequest("닉네임", null);
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
+            given(followRepository.countFollowingByFromId(userId)).willReturn(followingCount);
+
+            ProfileResponse updateProfile = userService.updateProfile(request, userId);
+
+            then(updateProfile.nickname()).isEqualTo(request.nickname());
+            then(updateProfile.followerCount()).isEqualTo(followerCount);
+            then(updateProfile.followingCount()).isEqualTo(followingCount);
+            then(updateProfile.profileImageUrl()).isEqualTo(user.getProfileUrl());
+            then(updateProfile.description()).isEqualTo(user.getDescription());
+        }
+
+        @DisplayName("한줄평 업데이트 성공)")
+        @Test
+        void success_2() {
+            var userId = 1L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var user = User.builder()
+                .password("test")
+                .username("username")
+                .profileUrl("/api/test.png")
+                .description("description")
+                .nickname("핑크 공주")
+                .build();
+            setField(user, "id", userId);
+
+            var request = new ProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
+            given(followRepository.countFollowingByFromId(userId)).willReturn(followingCount);
+
+            ProfileResponse updateProfile = userService.updateProfile(request, userId);
+
+            then(updateProfile.nickname()).isEqualTo(user.getNickname());
+            then(updateProfile.followerCount()).isEqualTo(followerCount);
+            then(updateProfile.followingCount()).isEqualTo(followingCount);
+            then(updateProfile.profileImageUrl()).isEqualTo(user.getProfileUrl());
+            then(updateProfile.description()).isEqualTo(request.description());
+        }
+
+        @DisplayName("닉네임 + 한줄평 업데이트 성공)")
+        @Test
+        void success_3() {
+            var userId = 1L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var user = User.builder()
+                .password("test")
+                .username("username")
+                .profileUrl("/api/test.png")
+                .description("description")
+                .nickname("핑크 공주")
+                .build();
+            setField(user, "id", userId);
+
+            var request = new ProfileUpdateRequest("닉네임", "아 배고프다 밥먹고 싶다");
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
+            given(followRepository.countFollowingByFromId(userId)).willReturn(followingCount);
+
+            ProfileResponse updateProfile = userService.updateProfile(request, userId);
+
+            then(updateProfile.nickname()).isEqualTo(request.nickname());
+            then(updateProfile.followerCount()).isEqualTo(followerCount);
+            then(updateProfile.followingCount()).isEqualTo(followingCount);
+            then(updateProfile.profileImageUrl()).isEqualTo(user.getProfileUrl());
+            then(updateProfile.description()).isEqualTo(request.description());
+        }
+
+        @DisplayName("업데이트 실패")
+        @Test
+        void fail() {
+            // given
+            var userId2 = 2L;
+            var userId = 1L;
+            var user = User.builder()
+                .password("test")
+                .username("username")
+                .profileUrl("/api/test.png")
+                .description("description")
+                .nickname("핑크 공주")
+                .build();
+            setField(user, "id", userId);
+
+            var request = new ProfileUpdateRequest(null, "아 배고프다 밥먹고 싶다");
+
+            given(userRepository.findById(userId2)).willThrow(new ServiceException(NOT_EXIST_USER));
+            // when
+
+            // then
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> userService.updateProfile(request, userId2));
+
+            assertEquals("사용자가 없습니다.", exception.getCode().getMessage());
+            assertEquals("1000", exception.getCode().getCode());
+            assertEquals(HttpStatus.BAD_REQUEST, exception.getCode().getStatus());
+        }
+
+
     }
 }

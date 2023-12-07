@@ -18,9 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
+import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
 
 @DisplayName("유저 서비스 테스트")
@@ -72,14 +75,24 @@ class UserServiceTest {
             then(profile.description()).isEqualTo(user.getDescription());
         }
 
+        @DisplayName("없는 유저의 프로필 조회시 실패")
+        @Test
+        void fail_when_get_profile() {
+            // given
+            var userId = 1L;
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.getProfile(userId));
+            // then
+            then(ex.getCode()).isEqualTo(NOT_EXIST_USER);
+        }
+
         @DisplayName("유저의 프로필 조회 실패")
         @Test
         void fail() {
             // given
             var userId2 = 2L;
             var userId = 1L;
-            var followerCount = 1L;
-            var followingCount = 10L;
             var user = User.builder()
                 .password("test")
                 .username("username")
@@ -91,11 +104,9 @@ class UserServiceTest {
 
             given(userRepository.findById(userId2)).willThrow(new ServiceException(NOT_EXIST_USER));
             // when
-
-            // then
             ServiceException exception = assertThrows(ServiceException.class,
                 () -> userService.getProfile(userId2));
-
+            // then
             assertEquals("사용자가 없습니다.", exception.getCode().getMessage());
             assertEquals("1000", exception.getCode().getCode());
             assertEquals(HttpStatus.BAD_REQUEST, exception.getCode().getStatus());
@@ -226,5 +237,97 @@ class UserServiceTest {
         }
 
 
+    }
+
+    @DisplayName("팔로우")
+    @Nested
+    class FollowFunction {
+
+        @DisplayName("성공")
+        @Test
+        void success() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var followerCount = 1L;
+            var followingCount = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var from = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(from, "id", fromUserId);
+
+            var to = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(to, "id", toUserId);
+
+            given(userRepository.findById(fromUserId)).willReturn(Optional.of(from));
+            given(userRepository.findById(toUserId)).willReturn(Optional.of(to));
+            given(followRepository.countFollowerByToId(toUserId)).willReturn(followerCount);
+            given(followRepository.countFollowingByFromId(toUserId)).willReturn(followingCount);
+            // when
+            UserFollowResponse result = userService.follow(request);
+            // then
+            then(result.followerCount()).isEqualTo(followerCount);
+            then(result.followingCount()).isEqualTo(followingCount);
+            then(result.toUserId()).isEqualTo(toUserId);
+        }
+
+        @DisplayName("팔로우하는 유저가 없는 경우")
+        @Test
+        void fail_not_exist_follower() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var to = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(to, "id", toUserId);
+
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.follow(request));
+            ErrorCode code = ex.getCode();
+            // then
+            then(code).isEqualTo(ErrorCode.NOT_EXIST_USER);
+        }
+
+        @DisplayName("팔로우당하는 유저가 없는 경우")
+        @Test
+        void fail_not_exist_following() {
+            // given
+            var fromUserId = 1L;
+            var toUserId = 10L;
+            var request = new UserFollowRequest(fromUserId, toUserId);
+
+            var from = User.builder()
+                .nickname("test")
+                .description("description")
+                .profileUrl("/api/test.png")
+                .password("sample")
+                .build();
+            setField(from, "id", fromUserId);
+
+            given(userRepository.findById(fromUserId)).willReturn(Optional.of(from));
+            // when
+            ServiceException ex = assertThrows(ServiceException.class,
+                () -> userService.follow(request));
+            ErrorCode code = ex.getCode();
+            // then
+            then(code).isEqualTo(ErrorCode.NOT_EXIST_USER);
+        }
     }
 }

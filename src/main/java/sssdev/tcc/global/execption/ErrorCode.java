@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+
     // user 1XXX
     NOT_EXIST_USER(HttpStatus.BAD_REQUEST, "1000", "사용자가 없습니다."),
     CHECK_USER(HttpStatus.BAD_REQUEST, "1001", "본인이 아닙니다."),

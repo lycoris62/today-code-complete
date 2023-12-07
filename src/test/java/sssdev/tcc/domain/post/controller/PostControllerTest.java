@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,8 @@ import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.global.common.dto.LoginUser;
+import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
 @DisplayName("Post API 테스트")
@@ -42,6 +45,9 @@ class PostControllerTest extends ControllerTest {
 
     @Mock
     PostLikeRepository postLikeRepository;
+
+    @MockBean
+    StatusUtil statusUtil;
 
     @Nested
     @DisplayName("게시글 목록 조회")
@@ -138,6 +144,61 @@ class PostControllerTest extends ControllerTest {
                     jsonPath(jsonPath + ".likeCount", "content01").value(0),
                     jsonPath(jsonPath + ".content", "content01").value(postDetail1.content())
                 );
+        }
+
+        @DisplayName("성공 케이스 - 팔로우 중인 유저의 게시글 목록 조회")
+        @Test
+        void get_following_posts_success() throws Exception {
+            // given
+            LoginUser loginUser = new LoginUser(1L);
+
+            User user1 = User.builder().username("username01").build();
+            setField(user1, "id", 1L);
+            User user2 = User.builder().username("username02").build();
+            setField(user2, "id", 2L);
+
+            user1.follow(user2);
+
+            Post post1 = Post.builder().content("content01").user(user1).build();
+            setField(post1, "id", 1L);
+            Post post2 = Post.builder().content("content02").user(user2).build();
+            setField(post2, "id", 2L);
+            Post post3 = Post.builder().content("content03").user(user2).build();
+            setField(post3, "id", 3L);
+
+            List<Long> followingUserIdList = user1.getFollowingList()
+                .stream()
+                .map(follow -> follow.getTo().getId())
+                .toList();
+
+            List<PostDetailResponse> filteredPostList = Stream.of(post1, post2, post3)
+                .filter(post -> followingUserIdList.contains(post.getUser().getId()))
+                .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository))
+                .toList();
+
+            Pageable pageable = PageRequest.of(0, 10);
+
+            Page<PostDetailResponse> pageResult = new PageImpl<>(
+                filteredPostList, pageable, filteredPostList.size());
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class))).willReturn(loginUser);
+            given(postService.getFollowingPosts(any(LoginUser.class), any(Pageable.class)))
+                .willReturn(pageResult);
+
+            // when // then
+            mockMvc.perform(get("/api/posts/follow")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .param("page", "0")
+                    .param("size", "10"))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.data.content.size()").value(2),
+                    jsonPath("$.data.content[?(@.content == '%s')]", "content01").doesNotExist(),
+                    jsonPath("$.data.content[?(@.content == '%s')]", "content02").exists(),
+                    jsonPath("$.data.content[?(@.content == '%s')]", "content03").exists()
+                );
+
         }
     }
 }

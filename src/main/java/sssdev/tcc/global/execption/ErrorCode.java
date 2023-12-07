@@ -18,11 +18,10 @@ public enum ErrorCode {
     // admin 4XXX
 
     // global
-    NOT_LOGIN(HttpStatus.UNAUTHORIZED, "5000", "로그인이 필요합니다.");
+    NOT_LOGIN(HttpStatus.UNAUTHORIZED, "5000", "로그인이 필요합니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "5001", "권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;
     private final String message;
-
-
 }

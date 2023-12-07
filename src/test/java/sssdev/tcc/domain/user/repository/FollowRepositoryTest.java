@@ -22,7 +22,6 @@ class FollowRepositoryTest extends RepositoryTest {
     void followerCount() {
         // give
         var userA = userRepository.save(User.builder()
-            .password("test")
             .username("from")
             .profileUrl("/api/test.png")
             .description("description")
@@ -30,7 +29,6 @@ class FollowRepositoryTest extends RepositoryTest {
             .build());
 
         var userB = userRepository.save(User.builder()
-            .password("test")
             .username("to")
             .profileUrl("/api/test.png")
             .description("description")
@@ -52,7 +50,6 @@ class FollowRepositoryTest extends RepositoryTest {
     void followingCount() {
         // give
         var userA = userRepository.save(User.builder()
-            .password("test")
             .username("from")
             .profileUrl("/api/test.png")
             .description("description")
@@ -60,7 +57,6 @@ class FollowRepositoryTest extends RepositoryTest {
             .build());
 
         var userB = userRepository.save(User.builder()
-            .password("test")
             .username("to")
             .profileUrl("/api/test.png")
             .description("description")

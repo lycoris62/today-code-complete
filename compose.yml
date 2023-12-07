@@ -1,0 +1,34 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+    #      - ./prometheus/volume:/prometheus
+    ports:
+      - 9090:9090
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+    networks:
+      - promnet
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    # user: "$GRA_UID:$GRA_GID"
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    #    volumes:
+    #      - ./grafana/volume:/var/lib/grafana
+    restart: always
+    networks:
+      - promnet
+
+networks:
+  promnet:
+    driver: bridge

@@ -28,7 +28,7 @@ import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
-@DisplayName("유저 API 서비스")
+@DisplayName("유저 API 단위 테스트")
 class UserControllerTest extends ControllerTest {
 
     @MockBean
@@ -45,9 +45,9 @@ class UserControllerTest extends ControllerTest {
         void success() throws Exception {
             // given
             var userId = 1L;
-            var response = new ProfileResponse("test", 100, 200, "/api/test/image.png",
+            var response = new ProfileResponse(1L, "test", 100L, 200L, "/api/test/image.png",
                 "description");
-            given(userService.getProfile(userId)).willReturn(response);
+            given(userService.getProfileList(userId)).willReturn(response);
             // when // then
             mockMvc.perform(get("/api/users/{userId}/profile", userId))
                 .andDo(print())
@@ -55,6 +55,7 @@ class UserControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.id").value(response.id()),
                     jsonPath("$.data.nickname").value(response.nickname()),
                     jsonPath("$.data.followerCount").value(response.followerCount()),
                     jsonPath("$.data.followingCount").value(response.followingCount()),
@@ -68,7 +69,8 @@ class UserControllerTest extends ControllerTest {
         void fail_1() throws Exception {
             // given
             var userId = 1L;
-            given(userService.getProfile(userId)).willThrow(new ServiceException(NOT_EXIST_USER));
+            given(userService.getProfileList(userId)).willThrow(
+                new ServiceException(NOT_EXIST_USER));
             // when // then
             mockMvc.perform(get("/api/users/{userId}/profile", userId))
                 .andDo(print())
@@ -95,8 +97,12 @@ class UserControllerTest extends ControllerTest {
             var followerCount = 10L;
             var followingCount = 11L;
             var response = new UserFollowResponse(toUserId, followerCount, followingCount);
+
+            var loginUser = LoginUser.builder()
+                .id(fromUserId)
+                .build();
             given(userService.follow(request)).willReturn(response);
-            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(fromUserId));
+            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -121,8 +127,12 @@ class UserControllerTest extends ControllerTest {
             var toUserId = 2L;
             var request = new UserFollowRequest(fromUserId, toUserId);
 
+            var loginUser = LoginUser.builder()
+                .id(fromUserId)
+                .build();
+
             given(userService.follow(request)).willThrow(new ServiceException(NOT_EXIST_USER));
-            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(fromUserId));
+            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -145,8 +155,12 @@ class UserControllerTest extends ControllerTest {
             var toUserId = 2L;
             var request = new UserFollowRequest(fromUserId, toUserId);
 
+            var loginUser = LoginUser.builder()
+                .id(fromUserId)
+                .build();
+
             given(userService.follow(request)).willThrow(new ServiceException(UNAUTHORIZED));
-            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(loginUserId));
+            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -170,28 +184,31 @@ class UserControllerTest extends ControllerTest {
         void success() throws Exception {
             // given
             var userId = 1L;
-            var response = new ProfileResponse("test2", 100, 200, "/api/test/image.png",
+            var response = new ProfileResponse(1L, "test2", 100L, 200L, "/api/test/image.png",
                 "description2");
-            var requst = new ProfileUpdateRequest("test2", "description2");
-            var sesstion = new LoginUser(userId);
+            var request = new ProfileUpdateRequest("test2", "description2");
 
-            String json = objectMapper.writeValueAsString(requst);
+            String json = objectMapper.writeValueAsString(request);
 
-            given(userService.updateProfile(requst, userId)).willReturn(response);
-            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(userId));
+            var loginUser = LoginUser.builder()
+                .id(userId)
+                .build();
+
+            given(userService.updateProfile(request, userId)).willReturn(response);
+            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
             mockMvc.perform(patch("/api/users/profile")
                     .content(json)
                     .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
                     .accept(MediaType.APPLICATION_JSON)
-                    .sessionAttr("login_user", sesstion)
-
+                    .sessionAttr("login_user", loginUser)
                 )
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.id").value(response.id()),
                     jsonPath("$.data.nickname").value(response.nickname()),
                     jsonPath("$.data.followerCount").value(response.followerCount()),
                     jsonPath("$.data.followingCount").value(response.followingCount()),
@@ -206,26 +223,47 @@ class UserControllerTest extends ControllerTest {
 
             var userId = 1L;
             var requst = new ProfileUpdateRequest("test2", null);
-            var sesstion = new LoginUser(userId);
+            var loginUser = LoginUser.builder()
+                .id(userId)
+                .build();
 
             String json = objectMapper.writeValueAsString(requst);
 
             given(userService.updateProfile(requst, userId)).willThrow(
                 new ServiceException(CHECK_USER));
-            given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(userId));
+            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
             mockMvc.perform(patch("/api/users/profile")
                     .content(json)
                     .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
                     .accept(MediaType.APPLICATION_JSON)
-                    .sessionAttr("login_user", sesstion)
-
+                    .sessionAttr("login_user", loginUser)
                 )
                 .andDo(print())
                 .andExpectAll(
                     status().isBadRequest(),
                     jsonPath("$.code").value("1001"),
                     jsonPath("$.message").value("본인이 아닙니다.")
+                );
+        }
+    }
+
+    @DisplayName("로그인 API")
+    @Nested
+    class Logout {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            // when // then
+            mockMvc.perform(post("/api/users/logout")
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }

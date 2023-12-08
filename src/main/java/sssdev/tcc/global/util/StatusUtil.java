@@ -32,9 +32,6 @@ public class StatusUtil {
 
     public boolean loginStatus(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if(session == null){
-            return false;
-        }
-        return true;
+        return session != null;
     }
 }

@@ -29,4 +29,9 @@ public class StatusUtil {
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(0);
     }
+
+    public boolean loginStatus(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null;
+    }
 }

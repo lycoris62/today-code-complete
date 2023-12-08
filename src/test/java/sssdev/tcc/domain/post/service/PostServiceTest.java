@@ -28,6 +28,7 @@ import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -126,7 +127,7 @@ class PostServiceTest {
             setField(user2, "id", 2L);
 
             user1.follow(user2);
-            LoginUser loginUser = new LoginUser(user1.getId());
+            LoginUser loginUser = new LoginUser(user1.getId(), UserRole.USER);
 
             Post post1 = Post.builder().content("content01").user(user1).build();
             setField(post1, "id", 1L);
@@ -167,7 +168,7 @@ class PostServiceTest {
         @Test
         void get_following_posts_fail_not_exist_user() {
             // given
-            LoginUser loginUser = new LoginUser(1L);
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
             Pageable pageable = PageRequest.of(0, 10);
 
             given(userRepository.findById(anyLong()))

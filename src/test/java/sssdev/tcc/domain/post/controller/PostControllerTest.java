@@ -30,6 +30,7 @@ import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
@@ -150,7 +151,7 @@ class PostControllerTest extends ControllerTest {
         @Test
         void get_following_posts_success() throws Exception {
             // given
-            LoginUser loginUser = new LoginUser(1L);
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
 
             User user1 = User.builder().username("username01").build();
             setField(user1, "id", 1L);

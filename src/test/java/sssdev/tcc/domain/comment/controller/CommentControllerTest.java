@@ -83,7 +83,7 @@ class CommentControllerTest extends ControllerTest {
 
             given(statusUtil.loginStatus(any())).willReturn(true);
             given(statusUtil.getLoginUser(any())).willReturn(loginUser);
-            given(commentService.getCommentsLogin(request.postId(), any()))
+            given(commentService.getCommentsLogin(any(), any()))
                 .willReturn(responseList);
 
             mockMvc.perform(
@@ -96,8 +96,8 @@ class CommentControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.data.size()").value(3),
                     jsonPath("$.data[0].likeStatus").value(true),
-                    jsonPath("$.data[0].likeStatus").value(false),
-                    jsonPath("$.data[0].likeStatus").value(true)
+                    jsonPath("$.data[1].likeStatus").value(false),
+                    jsonPath("$.data[2].likeStatus").value(true)
                 );
         }
     }

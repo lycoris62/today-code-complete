@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
+import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.common.dto.response.RootResponse;
 import sssdev.tcc.global.util.StatusUtil;
 
@@ -26,17 +27,17 @@ public class CommentController {
     public ResponseEntity<?> getComments(HttpServletRequest servletRequest,
         @RequestBody CommentRequest request) {
         if (!statusUtil.loginStatus(servletRequest)) {
-            List<CommentResponse> responseList = commentService.getCommentsNonLogin(
-                request.postId());
+            List<CommentResponse> responseList = commentService.getCommentsNonLogin(request.postId());
             return ResponseEntity.ok(
-                RootResponse.builder()
-                    .code("200")
+                RootResponse.builder().code("200")
                     .message("해당 게시물의 모든 댓글을 가져왔습니다.")
-                    .data(responseList)
-                    .build()
-            );
+                    .data(responseList).build());
         }
-
-        return null;
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        List<CommentResponse> responseList = commentService.getCommentsLogin(request.postId(), loginUser);
+        return ResponseEntity.ok(
+            RootResponse.builder().code("200")
+                .message("해당 게시물의 모든 댓글을 가져왔습니다.")
+                .data(responseList).build());
     }
 }

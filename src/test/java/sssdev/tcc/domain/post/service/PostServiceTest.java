@@ -28,6 +28,7 @@ import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.execption.ErrorCode;
@@ -48,6 +49,9 @@ class PostServiceTest {
 
     @Mock
     PostLikeRepository postLikeRepository;
+
+    @Mock
+    FollowRepository followRepository;
 
     @InjectMocks
     PostService postService;
@@ -131,10 +135,8 @@ class PostServiceTest {
             Post post3 = Post.builder().content("content03").user(user2).build();
             setField(post3, "id", 3L);
 
-            List<Long> followingUserIdList = user1.getFollowingList()
-                .stream()
-                .map(follow -> follow.getTo().getId())
-                .toList();
+            List<Long> followingUserIdList = followRepository
+                .findAllFollowIdByFromId(user1.getId());
 
             List<Post> postList = Stream.of(post1, post2, post3)
                 .filter(post -> user1.getFollowingList()

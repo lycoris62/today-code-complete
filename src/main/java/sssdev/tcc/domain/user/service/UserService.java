@@ -1,9 +1,11 @@
 package sssdev.tcc.domain.user.service;
 
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_OAUTH_TOKEN;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,10 +39,24 @@ public class UserService {
 
     public UserGithubInformation loginGithub(String code, HttpServletResponse response) {
         String accessToken = getAccessToken(code, response);
+        if (accessToken == null) {
+            throw new ServiceException(NOT_EXIST_OAUTH_TOKEN);
+        }
         JsonNode userResourceNode = getUserName(accessToken);
         String login = userResourceNode.get("login").asText();
         String id = userResourceNode.get("id").asText();
         String avatar_url = userResourceNode.get("avatar_url").asText();
+
+        Optional<User> user = userRepository.findByUsername(id);
+        if (user.isEmpty()) {
+            userRepository.save(User.builder()
+                .username(id)
+                .nickname(login)
+                .profileUrl(avatar_url)
+                .description("안녕하세요")
+                .build());
+        }
+
         return new UserGithubInformation(login, id, avatar_url);
     }
 
@@ -54,20 +70,20 @@ public class UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity entity = new HttpEntity(params, headers);
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
 
         ResponseEntity<JsonNode> responseNode = restTemplate.exchange(
             "https://github.com/login/oauth/access_token", HttpMethod.POST,
             entity,
             JsonNode.class);
         JsonNode accessTokenNode = responseNode.getBody();
-        return accessTokenNode.get("access_token").asText();
+        return accessTokenNode != null ? accessTokenNode.get("access_token").asText() : null;
     }
 
     public JsonNode getUserName(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
-        HttpEntity entity = new HttpEntity(headers);
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(null, headers);
 
         return restTemplate.exchange("https://api.github.com/user", HttpMethod.GET, entity,
             JsonNode.class).getBody();

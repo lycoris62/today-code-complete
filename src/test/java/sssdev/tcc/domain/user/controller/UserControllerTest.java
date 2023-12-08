@@ -12,16 +12,19 @@ import static sssdev.tcc.global.execption.ErrorCode.CHECK_USER;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 import static sssdev.tcc.global.execption.ErrorCode.UNAUTHORIZED;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
+import sssdev.tcc.domain.user.dto.response.UserGithubInformation;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.execption.ServiceException;
@@ -35,6 +38,32 @@ class UserControllerTest extends ControllerTest {
     UserService userService;
     @MockBean
     StatusUtil statusUtil;
+
+    @Nested
+    @DisplayName("유저 회원가입 + 로그인 ")
+    class Login {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            HttpServletResponse res = new MockHttpServletResponse();
+            var code = "test";
+            var response = new UserGithubInformation("test", "test", "/api/test/image.png"
+            );
+
+            given(userService.loginGithub(code, res)).willReturn(response);
+
+            // when // then
+            mockMvc.perform(get("/api/users/login/github?code=test"))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
+                );
+        }
+    }
 
     @Nested
     @DisplayName("프로필 단건 조회")
@@ -179,6 +208,7 @@ class UserControllerTest extends ControllerTest {
 
             given(userService.updateProfile(requst, userId)).willReturn(response);
             given(statusUtil.getLoginUser(any())).willReturn(new LoginUser(userId));
+
             // when // then
             mockMvc.perform(patch("/api/users/profile")
                     .content(json)

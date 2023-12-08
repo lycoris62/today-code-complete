@@ -31,7 +31,7 @@ import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
-@DisplayName("유저 API 서비스")
+@DisplayName("유저 API 단위 테스트")
 class UserControllerTest extends ControllerTest {
 
     @MockBean
@@ -249,13 +249,32 @@ class UserControllerTest extends ControllerTest {
                     .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
                     .accept(MediaType.APPLICATION_JSON)
                     .sessionAttr("login_user", sesstion)
-
                 )
                 .andDo(print())
                 .andExpectAll(
                     status().isBadRequest(),
                     jsonPath("$.code").value("1001"),
                     jsonPath("$.message").value("본인이 아닙니다.")
+                );
+        }
+    }
+
+    @DisplayName("로그인 API")
+    @Nested
+    class Logout {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            // when // then
+            mockMvc.perform(post("/api/users/logout")
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }

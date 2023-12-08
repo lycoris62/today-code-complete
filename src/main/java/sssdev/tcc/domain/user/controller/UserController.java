@@ -86,4 +86,13 @@ public class UserController {
             .build());
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        statusUtil.clearSession(request);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build()
+        );
+    }
 }

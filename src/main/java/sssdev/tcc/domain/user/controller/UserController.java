@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getProfile(@PathVariable(name = "id") Long id) {
-        ProfileResponse response = userService.getProfile(id);
+        ProfileResponse response = userService.getProfileList(id);
         return ResponseEntity.ok(
             RootResponse.builder()
                 .code("200")
@@ -70,4 +70,13 @@ public class UserController {
             .build());
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        statusUtil.clearSession(request);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build()
+        );
+    }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import sssdev.tcc.domain.user.domain.Follow;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.support.RepositoryTest;
@@ -97,7 +98,8 @@ class FollowRepositoryTest extends RepositoryTest {
 
         userA.follow(userB);
 
-        List<Long> followingIdList = followRepository.findAllFollowIdByFromId(userA.getId());
+        List<Long> followingIdList = followRepository.findAllFollowIdByFromId(userA.getId(),
+            PageRequest.of(0, 10));
 
         assertThat(followingIdList).size().isEqualTo(1);
         assertThat(followingIdList.get(0)).isEqualTo(userB.getId());

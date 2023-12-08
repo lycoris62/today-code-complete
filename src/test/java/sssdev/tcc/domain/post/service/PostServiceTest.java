@@ -137,7 +137,7 @@ class PostServiceTest {
             setField(post3, "id", 3L);
 
             List<Long> followingUserIdList = followRepository
-                .findAllFollowIdByFromId(user1.getId());
+                .findAllFollowIdByFromId(user1.getId(), PageRequest.of(0, 10));
 
             List<Post> postList = Stream.of(post1, post2, post3)
                 .filter(post -> user1.getFollowingList()

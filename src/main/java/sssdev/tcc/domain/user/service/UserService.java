@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
+import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
@@ -35,7 +41,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final RestTemplate restTemplate = new RestTemplate();
-
 
     public UserGithubInformation loginGithub(String code, HttpServletResponse response) {
         String accessToken = getAccessToken(code, response);
@@ -89,17 +94,17 @@ public class UserService {
             JsonNode.class).getBody();
     }
 
-    public ProfileResponse getProfile(Long id) {
+    public ProfileResponse getProfileList(Long id) {
         var user = userRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
         return ProfileResponse.of(user, followRepository);
     }
 
     @Transactional
-    public ProfileResponse updateProfile(UserProfileUpdateRequest requst, Long id) {
-        User user = userRepository.findById(id)
+    public ProfileResponse updateProfile(UserProfileUpdateRequest request, Long userId) {
+        User user = userRepository.findById(userId)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
-        user.update(requst);
+        user.update(request);
         return ProfileResponse.of(user, followRepository);
     }
 
@@ -118,4 +123,12 @@ public class UserService {
         );
     }
 
+    public AdminUserUpdateResponse updateProfileAdmin(AdminUserUpdateRequest body) {
+        return null;
+    }
+
+    public Page<ProfileListItem> getProfileListAdmin(AdminUserListGetRequest request,
+        Pageable pageable) {
+        return null;
+    }
 }

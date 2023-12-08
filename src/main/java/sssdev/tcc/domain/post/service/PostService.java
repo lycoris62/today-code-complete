@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
@@ -31,5 +33,10 @@ public class PostService {
 
         return postRepository.findAllByContentContaining(query, pageable)
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
+    }
+
+    // todo
+    public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {
+        return null;
     }
 }

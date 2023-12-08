@@ -10,8 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Nested;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
@@ -34,7 +34,7 @@ class CommentControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("로그인을 하지 않았을 때 전체 조회 할 경우")
-        void get_comments_test() throws Exception {
+        void get_comments_test_not_login() throws Exception {
 
             CommentRequest request = new CommentRequest(1L);
 
@@ -47,7 +47,7 @@ class CommentControllerTest extends ControllerTest {
 
             String json = objectMapper.writeValueAsString(request);
 
-            given(statusUtil.loginStatus(any(HttpServletRequest.class))).willReturn(true);
+            given(statusUtil.loginStatus(any(HttpServletRequest.class))).willReturn(false);
             given(commentService.getCommentsNonLogin(any())).willReturn(responseList);
 
             mockMvc.perform(get("/api/comments")
@@ -63,6 +63,10 @@ class CommentControllerTest extends ControllerTest {
                 );
         }
 
+        @Test
+        @DisplayName("로그인을 했을 때 전체 조회 할 경우")
+        void get_comments_test_login() {
 
+        }
     }
 }

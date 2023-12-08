@@ -59,6 +59,7 @@ public class PostService {
 
         return postRepository.findAllByUserIdIn(followingUserIdList, pageable)
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
+    }
 
     // todo 
     public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {

@@ -14,6 +14,7 @@ import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.execption.ServiceException;
@@ -28,6 +29,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
+    private final FollowRepository followRepository;
 
     /**
      * 모든 게시글을 가져옴. query 값이 존재하면 query 포함 게시글을 가져옴
@@ -51,10 +53,7 @@ public class PostService {
         User user = userRepository.findById(loginUser.id())
             .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
 
-        List<Long> followingUserIdList = user.getFollowingList()
-            .stream()
-            .map(follow -> follow.getTo().getId())
-            .toList();
+        List<Long> followingUserIdList = followRepository.findAllFollowIdByFromId(user.getId());
 
         return postRepository.findAllByUserIdIn(followingUserIdList, pageable)
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));

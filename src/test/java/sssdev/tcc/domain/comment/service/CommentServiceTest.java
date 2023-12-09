@@ -170,7 +170,7 @@ class CommentServiceTest {
             ServiceException exception = assertThrows(ServiceException.class,
                 () -> commentService.createComments(loginUser, request));
 
-            assertThat(exception.getCode().getMessage()).isEqualTo("게시물이 없습니다.");
+            assertThat(exception.getCode().getMessage()).isEqualTo("게시글이 없습니다.");
             assertThat(exception.getCode().getCode()).isEqualTo("2000");
         }
     }

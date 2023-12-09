@@ -180,7 +180,7 @@ class CommentControllerTest extends ControllerTest {
                 .andDo(print())
                 .andExpectAll(status().isBadRequest(),
                     jsonPath("$.code").value("2000"),
-                    jsonPath("$.message").value("게시물이 없습니다.")
+                    jsonPath("$.message").value("게시글이 없습니다.")
                 );
         }
     }

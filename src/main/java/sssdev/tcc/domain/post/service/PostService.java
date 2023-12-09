@@ -1,5 +1,6 @@
 package sssdev.tcc.domain.post.service;
 
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import java.util.List;
@@ -63,6 +64,17 @@ public class PostService {
 
         return postRepository.findAllByUserIdIn(followingUserIdList, pageable)
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
+    }
+
+    /**
+     * 게시글 단건 조회
+     */
+    public PostDetailResponse getPost(Long id) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        return PostDetailResponse.of(post, commentRepository, postLikeRepository);
     }
 
     @Transactional

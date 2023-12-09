@@ -11,9 +11,13 @@ import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
+import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.post.repository.PostRepository;
+import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +56,30 @@ public class CommentService {
     }
 
     public CommentResponse createComments(LoginUser loginUser, CommentCreateRequest requestDto) {
+        CommentResponse response;
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(ErrorCode.NOT_EXIST_USER)
+        );
+
+        Post post = postRepository.findById(requestDto.postId()).orElseThrow(
+            () -> new ServiceException(ErrorCode.NOT_EXIST_POST)
+        );
+
+        Comment comment = Comment.builder()
+            .content(requestDto.content())
+            .user(user)
+            .post(post)
+            .build();
+
+        response = CommentResponse.builder()
+            .content(comment.getContent())
+            .writer(comment.getUser().getUsername())
+            .likeStatus(false)
+            .build();
+
+        commentRepository.save(comment);
+        return response;
     }
 
     // todo

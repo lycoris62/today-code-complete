@@ -11,6 +11,8 @@ import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
+import sssdev.tcc.domain.post.repository.PostRepository;
+import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
 
 @Service
@@ -19,6 +21,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentLikeRepoisoty commentLikeRepoisoty;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     public List<CommentResponse> getComments(Long postId, LoginUser loginUser) {
         List<Comment> commentList = commentRepository.findAllByPostId(postId);
@@ -47,6 +51,8 @@ public class CommentService {
         return responseList;
     }
 
+    public CommentResponse createComments(LoginUser loginUser, CommentCreateRequest requestDto) {
+    }
 
     // todo
     public void deleteComment(Long id) {
@@ -56,4 +62,5 @@ public class CommentService {
     public void deletePost(Long id) {
 
     }
+
 }

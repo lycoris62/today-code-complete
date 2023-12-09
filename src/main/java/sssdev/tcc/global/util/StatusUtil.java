@@ -30,7 +30,7 @@ public class StatusUtil {
         session.setMaxInactiveInterval(0);
     }
 
-    public boolean loginStatus(HttpServletRequest request) {
+    public boolean isLogin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return session != null;
     }

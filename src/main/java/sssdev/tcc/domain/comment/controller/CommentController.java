@@ -38,4 +38,19 @@ public class CommentController {
                 .message("해당 게시물의 모든 댓글을 가져왔습니다.")
                 .data(responseList).build());
     }
+
+    @PostMapping("/comments")
+    public ResponseEntity<?> createComments(
+        @RequestBody CommentCreateRequest requestDto,
+        HttpServletRequest servletRequest) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        CommentResponse commentResponse = commentService.createComments(loginUser, requestDto);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 생성 성공")
+            .data(commentResponse)
+            .build());
+    }
 }

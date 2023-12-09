@@ -107,9 +107,7 @@ public class PostService {
         Post post = postRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
 
-        if (!post.getUser().getId().equals(loginUser.id())) {
-            throw new ServiceException(UNAUTHORIZED);
-        }
+        checkSameUser(loginUser, post);
 
         post.updateContent(request);
 
@@ -124,11 +122,15 @@ public class PostService {
         Post post = postRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
 
+        checkSameUser(loginUser, post);
+
+        postRepository.delete(post);
+    }
+
+    private void checkSameUser(LoginUser loginUser, Post post) {
         if (!post.getUser().getId().equals(loginUser.id())) {
             throw new ServiceException(UNAUTHORIZED);
         }
-
-        postRepository.delete(post);
     }
 
     // todo

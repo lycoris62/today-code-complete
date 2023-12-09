@@ -105,4 +105,18 @@ public class PostController {
             .data(post)
             .build());
     }
+
+    /**
+     * 게시글 삭제
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updatePost(
+        @PathVariable(name = "id") Long id,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        postService.delete(id, loginUser);
+
+        return ResponseEntity.ok().build();
+    }
 }

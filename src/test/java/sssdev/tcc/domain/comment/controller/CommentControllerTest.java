@@ -178,7 +178,7 @@ class CommentControllerTest extends ControllerTest {
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpectAll(status().isBadRequest(),
+                .andExpectAll(status().isNotFound(),
                     jsonPath("$.code").value("2000"),
                     jsonPath("$.message").value("게시글이 없습니다.")
                 );

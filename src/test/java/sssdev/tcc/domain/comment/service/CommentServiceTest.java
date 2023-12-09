@@ -148,8 +148,7 @@ class CommentServiceTest {
         void create_comments_test_fail_not_exist_user_exception() {
             LoginUser loginUser = new LoginUser(1L, UserRole.USER);
             CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
-            given(userRepository.findById(loginUser.id())).willThrow(
-                new ServiceException(NOT_EXIST_USER));
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.empty());
 
             ServiceException exception = assertThrows(ServiceException.class,
                 () -> commentService.createComments(loginUser, request));
@@ -164,8 +163,7 @@ class CommentServiceTest {
             LoginUser loginUser = new LoginUser(1L, UserRole.USER);
             CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
             given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
-            given(postRepository.findById(request.postId())).willThrow(
-                new ServiceException(NOT_EXIST_POST));
+            given(postRepository.findById(request.postId())).willReturn(Optional.empty());
 
             ServiceException exception = assertThrows(ServiceException.class,
                 () -> commentService.createComments(loginUser, request));

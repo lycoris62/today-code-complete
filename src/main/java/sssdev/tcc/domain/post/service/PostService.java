@@ -77,6 +77,9 @@ public class PostService {
         return PostDetailResponse.of(post, commentRepository, postLikeRepository);
     }
 
+    /**
+     * 게시글 생성
+     */
     @Transactional
     public void createPost(LoginUser loginUser, PostCreateRequest requestDto) {
 

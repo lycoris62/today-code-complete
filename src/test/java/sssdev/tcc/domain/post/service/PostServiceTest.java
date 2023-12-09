@@ -6,9 +6,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
+import static sssdev.tcc.global.execption.ErrorCode.UNAUTHORIZED;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
@@ -105,7 +108,7 @@ class PostServiceTest {
                     ErrorCode errorCode = ((ServiceException) exception).getCode();
                     assertThat(errorCode.getMessage()).isEqualTo("게시글이 없습니다.");
                     assertThat(errorCode.getCode()).isEqualTo("2000");
-                    assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(errorCode.getStatus()).isEqualTo(NOT_FOUND);
                 });
         }
     }
@@ -281,6 +284,161 @@ class PostServiceTest {
                     assertThat(errorCode.getCode()).isEqualTo("1000");
                     assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
                 });
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 수정")
+    class UpdatePost {
+
+        @DisplayName("성공 케이스 - 게시글 수정 성공")
+        @Test
+        void update_post_success() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            given(postRepository.findById(post1.getId())).willReturn(Optional.of(post1));
+
+            // when
+            PostDetailResponse responseDto = postService
+                .updatePost(post1.getId(), loginUser, requestDto);
+
+            // then
+            assertThat(responseDto.content()).isEqualTo(requestDto.getContent());
+        }
+
+        @DisplayName("실패 케이스 - 없는 게시글")
+        @Test
+        void update_post_fail_not_exist_post() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            given(postRepository.findById(post1.getId()))
+                .willThrow(new ServiceException(NOT_EXIST_POST));
+
+            // when && then
+            assertThatThrownBy(() -> postService
+                .updatePost(post1.getId(), loginUser, requestDto))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(exception -> {
+                    ErrorCode errorCode = ((ServiceException) exception).getCode();
+                    assertThat(errorCode.getCode()).isEqualTo("2000");
+                    assertThat(errorCode.getMessage()).isEqualTo("게시글이 없습니다.");
+                    assertThat(errorCode.getStatus()).isEqualTo(NOT_FOUND);
+                });
+        }
+
+        @DisplayName("실패 케이스 - 작성자가 아닌 사용자")
+        @Test
+        void update_post_fail_unauthorized() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            given(postRepository.findById(post1.getId()))
+                .willThrow(new ServiceException(UNAUTHORIZED));
+
+            // when && then
+            assertThatThrownBy(() -> postService
+                .updatePost(post1.getId(), loginUser, requestDto))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(exception -> {
+                    ErrorCode errorCode = ((ServiceException) exception).getCode();
+                    assertThat(errorCode.getCode()).isEqualTo("5001");
+                    assertThat(errorCode.getMessage()).isEqualTo("권한이 없습니다.");
+                    assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                });
+        }
+
+        @Nested
+        @DisplayName("게시글 삭제")
+        class DeletePost {
+
+            @DisplayName("성공 케이스 - 게시글 삭제 성공")
+            @Test
+            void delete_post_success() {
+                // given
+                User user = User.builder().username("username01").build();
+                setField(user, "id", 1L);
+                LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+                Post post1 = Post.builder().content("content01").user(user).build();
+                setField(post1, "id", 1L);
+
+                given(postRepository.findById(post1.getId())).willReturn(Optional.of(post1));
+
+                // when
+                postService.delete(post1.getId(), loginUser);
+
+                // then
+                then(postRepository).should().delete(post1);
+            }
+
+            @DisplayName("실패 케이스 - 없는 게시글")
+            @Test
+            void delete_post_fail_not_exist_post() {
+                // given
+                User user = User.builder().username("username01").build();
+                setField(user, "id", 1L);
+                LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+                Post post1 = Post.builder().content("content01").user(user).build();
+                setField(post1, "id", 1L);
+
+                given(postRepository.findById(post1.getId()))
+                    .willThrow(new ServiceException(NOT_EXIST_POST));
+
+                // when && then
+                assertThatThrownBy(() -> postService
+                    .delete(post1.getId(), loginUser))
+                    .isInstanceOf(ServiceException.class)
+                    .satisfies(exception -> {
+                        ErrorCode errorCode = ((ServiceException) exception).getCode();
+                        assertThat(errorCode.getCode()).isEqualTo("2000");
+                        assertThat(errorCode.getMessage()).isEqualTo("게시글이 없습니다.");
+                        assertThat(errorCode.getStatus()).isEqualTo(NOT_FOUND);
+                    });
+            }
+
+            @DisplayName("실패 케이스 - 작성자가 아닌 사용자")
+            @Test
+            void delete_post_fail_unauthorized() {
+                // given
+                User user = User.builder().username("username01").build();
+                setField(user, "id", 1L);
+                LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+                Post post1 = Post.builder().content("content01").user(user).build();
+                setField(post1, "id", 1L);
+
+                given(postRepository.findById(post1.getId()))
+                    .willThrow(new ServiceException(UNAUTHORIZED));
+
+                // when && then
+                assertThatThrownBy(() -> postService
+                    .delete(post1.getId(), loginUser))
+                    .isInstanceOf(ServiceException.class)
+                    .satisfies(exception -> {
+                        ErrorCode errorCode = ((ServiceException) exception).getCode();
+                        assertThat(errorCode.getCode()).isEqualTo("5001");
+                        assertThat(errorCode.getMessage()).isEqualTo("권한이 없습니다.");
+                        assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                    });
+            }
         }
     }
 }

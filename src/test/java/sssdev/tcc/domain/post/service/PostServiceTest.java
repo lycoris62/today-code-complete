@@ -237,50 +237,50 @@ class PostServiceTest {
                     assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
                 });
         }
+    }
 
-        @Nested
-        @DisplayName("게시글 생성")
-        class CreatePost {
+    @Nested
+    @DisplayName("게시글 생성")
+    class CreatePost {
 
-            @DisplayName("성공 케이스 - 게시글 성공")
-            @Test
-            void create_post_success() {
-                // given
-                User user = User.builder().username("username01").build();
-                setField(user, "id", 1L);
-                LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+        @DisplayName("성공 케이스 - 게시글 성공")
+        @Test
+        void create_post_success() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
 
-                PostCreateRequest requestDto = new PostCreateRequest("content01");
+            PostCreateRequest requestDto = new PostCreateRequest("content01");
 
-                given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+            given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-                // when
-                postService.createPost(loginUser, requestDto);
+            // when
+            postService.createPost(loginUser, requestDto);
 
-                // then
-                then(postRepository).should().save(any(Post.class));
-            }
+            // then
+            then(postRepository).should().save(any(Post.class));
+        }
 
-            @DisplayName("실패 케이스 - 사용자가 없음")
-            @Test
-            void create_post_fail_not_exist_user() {
-                // given
-                LoginUser loginUser = new LoginUser(1L, UserRole.USER);
-                PostCreateRequest requestDto = new PostCreateRequest("content01");
+        @DisplayName("실패 케이스 - 사용자가 없음")
+        @Test
+        void create_post_fail_not_exist_user() {
+            // given
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            PostCreateRequest requestDto = new PostCreateRequest("content01");
 
-                given(userRepository.findById(anyLong()))
-                    .willThrow(new ServiceException(NOT_EXIST_USER));
+            given(userRepository.findById(anyLong()))
+                .willThrow(new ServiceException(NOT_EXIST_USER));
 
-                // when & then
-                assertThatThrownBy(() -> postService.createPost(loginUser, requestDto))
-                    .isInstanceOf(ServiceException.class)
-                    .satisfies(exception -> {
-                        ErrorCode errorCode = ((ServiceException) exception).getCode();
-                        assertThat(errorCode.getMessage()).isEqualTo("사용자가 없습니다.");
-                        assertThat(errorCode.getCode()).isEqualTo("1000");
-                        assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    });
-            }
+            // when & then
+            assertThatThrownBy(() -> postService.createPost(loginUser, requestDto))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(exception -> {
+                    ErrorCode errorCode = ((ServiceException) exception).getCode();
+                    assertThat(errorCode.getMessage()).isEqualTo("사용자가 없습니다.");
+                    assertThat(errorCode.getCode()).isEqualTo("1000");
+                    assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                });
         }
     }
 }

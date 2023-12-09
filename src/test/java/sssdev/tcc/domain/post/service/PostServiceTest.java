@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import java.util.List;
@@ -61,8 +62,57 @@ class PostServiceTest {
     PostService postService;
 
     @Nested
-    @DisplayName("게시글 목록 조회")
+    @DisplayName("게시글 단건 조회")
     class PostGet {
+
+        @DisplayName("성공 케이스 - 단건 게시글")
+        @Test
+        void get_post_success() {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            Post post = Post.builder().content("content01").user(user).build();
+            setField(post, "id", 1L);
+
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+
+            // when
+            PostDetailResponse responseDto = postService.getPost(post.getId());
+
+            // then
+            assertThat(responseDto.username()).isEqualTo(user.getUsername());
+            assertThat(responseDto.content()).isEqualTo(post.getContent());
+            assertThat(responseDto.commentCount()).isEqualTo(0);
+            assertThat(responseDto.likeCount()).isEqualTo(0);
+        }
+
+        @DisplayName("실패 케이스 - 없는 게시글")
+        @Test
+        void get_post_fail_n() {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            Post post = Post.builder().content("content01").user(user).build();
+            setField(post, "id", 1L);
+
+            given(postRepository.findById(post.getId()))
+                .willThrow(new ServiceException(NOT_EXIST_POST));
+
+            // when && then
+            assertThatThrownBy(() -> postService.getPost(post.getId()))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(exception -> {
+                    ErrorCode errorCode = ((ServiceException) exception).getCode();
+                    assertThat(errorCode.getMessage()).isEqualTo("게시글이 없습니다.");
+                    assertThat(errorCode.getCode()).isEqualTo("2000");
+                    assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                });
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 목록 조회")
+    class PostsGet {
 
         @DisplayName("성공 케이스 - 전체 게시글")
         @Test

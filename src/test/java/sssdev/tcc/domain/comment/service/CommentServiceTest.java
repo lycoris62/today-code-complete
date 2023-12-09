@@ -17,11 +17,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sssdev.tcc.domain.comment.domain.Comment;
+import sssdev.tcc.domain.comment.domain.CommentLike;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.domain.UserRole;
+import sssdev.tcc.global.common.dto.LoginUser;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -41,6 +44,7 @@ class CommentServiceTest {
     @BeforeEach
     void setUp() {
         user = User.builder().username("작성자").build();
+        setField(user, "id", 1L);
         post = Post.builder().user(user).build();
         setField(post, "id", 1L);
     }
@@ -52,23 +56,57 @@ class CommentServiceTest {
         @Test
         @DisplayName("로그인 하지 않은 상태로 조회할 때")
         void get_comments_test_not_login() {
+            // given
+            LoginUser loginUser = null;
             List<Comment> commentList = new ArrayList<>();
+            List<CommentResponse> responseList;
 
-            for (int i = 0; i < 4; i++) {
-                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post)
-                    .build();
+            for (int i = 0; i < 3; i++) {
+                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post).build();
                 commentList.add(comment);
             }
 
             given(commentRepository.findAllByPostId(post.getId())).willReturn(commentList);
 
-            List<CommentResponse> commentResponseList = commentService.getCommentsNonLogin(
-                post.getId());
-            assertThat(commentResponseList).hasSize(4);
-            assertThat(commentResponseList.get(0).content()).isEqualTo("댓글 내용 0");
-            assertThat(commentResponseList.get(1).content()).isEqualTo("댓글 내용 1");
-            assertThat(commentResponseList.get(2).content()).isEqualTo("댓글 내용 2");
-        }
-    }
+            // when
+            responseList = commentService.getComments(post.getId(), loginUser);
 
+            // then
+            assertThat(responseList).hasSize(3);
+            assertThat(responseList.get(0).content()).isEqualTo("댓글 내용 0");
+            assertThat(responseList.get(1).content()).isEqualTo("댓글 내용 1");
+            assertThat(responseList.get(2).content()).isEqualTo("댓글 내용 2");
+        }
+
+        @Test
+        @DisplayName("로그인 한 상태로 조회할 때")
+        void get_comments_test_login() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            User user1 = User.builder().username("댓글 보는 사람").build();
+            setField(user1, "id", 2L);
+
+            List<CommentResponse> responseList = new ArrayList<>();
+            List<Comment> commentList = new ArrayList<>();
+            List<CommentLike> commentLikeList = new ArrayList<>();
+
+            for (int i = 0; i < 3; i++) {
+                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post).build();
+                commentList.add(comment);
+                CommentLike commentLike = CommentLike.builder().comment(comment).user(user1).build();
+                if(i % 2 == 0)
+                    commentLikeList.add(commentLike);
+            }
+
+            given(commentRepository.findAllByPostId(post.getId())).willReturn(commentList);
+            given(commentLikeRepoisoty.findByUserId(loginUser.id())).willReturn(commentLikeList);
+
+            responseList = commentService.getComments(post.getId(), loginUser);
+
+            assertThat(responseList).hasSize(3);
+            assertThat(responseList.get(0).likeStatus()).isEqualTo(true);
+            assertThat(responseList.get(1).likeStatus()).isEqualTo(false);
+            assertThat(responseList.get(2).likeStatus()).isEqualTo(true);
+        }
+
+    }
 }

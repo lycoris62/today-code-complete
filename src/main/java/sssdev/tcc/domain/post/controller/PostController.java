@@ -6,12 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -85,5 +87,22 @@ public class PostController {
         postService.createPost(loginUser, requestDto);
 
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 게시글 수정
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<RootResponse<PostDetailResponse>> updatePost(
+        @PathVariable(name = "id") Long id,
+        PostUpdateRequest requestDto,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        PostDetailResponse post = postService.updatePost(id, loginUser, requestDto);
+
+        return ResponseEntity.ok(RootResponse.<PostDetailResponse>builder()
+            .data(post)
+            .build());
     }
 }

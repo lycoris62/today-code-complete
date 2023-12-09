@@ -7,6 +7,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,12 +19,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
+import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
+import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.domain.UserRole;
+import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +41,10 @@ class CommentServiceTest {
 
     @Mock
     CommentLikeRepoisoty commentLikeRepoisoty;
+    @Mock
+    PostRepository postRepository;
+    @Mock
+    UserRepository userRepository;
 
     User user;
     Post post;
@@ -108,5 +116,19 @@ class CommentServiceTest {
             assertThat(responseList.get(2).likeStatus()).isEqualTo(true);
         }
 
+    }
+
+    @Test
+    @DisplayName("댓글 작성 성공 테스트")
+    void create_comments_test_success() {
+        LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+        CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+        given(postRepository.findById(request.postId())).willReturn(Optional.of(post));
+        given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+
+        CommentResponse response = commentService.createComments(loginUser, request);
+
+        assertThat(response.content()).isEqualTo("댓글 내용");
+        assertThat(response.writer()).isEqualTo(user.getUsername());
     }
 }

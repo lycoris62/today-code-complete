@@ -55,7 +55,7 @@ public class AdminController {
 
     @DeleteMapping("/comments/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable(name = "id") Long id) {
-        commentService.deleteComment(id);
+        commentService.deleteCommentAdmin(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
@@ -64,7 +64,7 @@ public class AdminController {
 
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<?> deletePost(@PathVariable(name = "id") Long id) {
-        commentService.deletePost(id);
+        commentService.deletePostAdmin(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
@@ -74,7 +74,7 @@ public class AdminController {
     @PatchMapping("/posts/{id}")
     public ResponseEntity<?> updatePost(@PathVariable(name = "id") Long id,
         @RequestBody AdminPostUpdateRequest request) {
-        AdminPostUpdateResponse body = postService.updatePost(id, request);
+        AdminPostUpdateResponse body = postService.updatePostAdmin(id, request);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")

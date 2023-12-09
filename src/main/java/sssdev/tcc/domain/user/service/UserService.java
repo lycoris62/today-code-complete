@@ -27,6 +27,7 @@ import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
 import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserProfileUrlUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.dto.response.UserGithubInformation;
 import sssdev.tcc.domain.user.repository.FollowRepository;
@@ -108,6 +109,13 @@ public class UserService {
         return ProfileResponse.of(user, followRepository);
     }
 
+    @Transactional
+    public ProfileResponse updateProfileUrl(UserProfileUrlUpdateRequest body, Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
+        user.updateUrl(body.profileUrl());
+        return ProfileResponse.of(user, followRepository);
+    }
 
     public UserFollowResponse follow(UserFollowRequest request) {
         User from = userRepository.findById(request.fromUserId())
@@ -123,12 +131,20 @@ public class UserService {
         );
     }
 
+    @Transactional
     public AdminUserUpdateResponse updateProfileAdmin(AdminUserUpdateRequest body) {
-        return null;
+        User user = userRepository.findById(body.userId())
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
+        user.update(new UserProfileUpdateRequest(body.nickname(), body.description()));
+        user.updateRol(body.role());
+        user.updateUrl(body.profileUrl());
+        return new AdminUserUpdateResponse(user.getRole(), user.getDescription(),
+            user.getProfileUrl(), user.getNickname(), user.getId());
     }
 
     public Page<ProfileListItem> getProfileListAdmin(AdminUserListGetRequest request,
         Pageable pageable) {
         return null;
     }
+
 }

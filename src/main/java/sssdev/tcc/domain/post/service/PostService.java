@@ -36,7 +36,7 @@ public class PostService {
     }
 
     // todo
-    public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {
+    public AdminPostUpdateResponse updatePostAdmin(Long id, AdminPostUpdateRequest request) {
         return null;
     }
 }

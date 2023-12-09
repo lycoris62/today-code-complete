@@ -199,7 +199,7 @@ class AdminControllerTest extends ControllerTest {
                 .content(request.content())
                 .build();
 
-            given(postService.updatePost(eq(postId), any())).willReturn(response);
+            given(postService.updatePostAdmin(eq(postId), any())).willReturn(response);
             // when // then
             mockMvc.perform(patch("/api/admin/posts/{id}", postId)
                     .content(objectMapper.writeValueAsString(request))

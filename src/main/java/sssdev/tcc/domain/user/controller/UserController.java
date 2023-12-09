@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserProfileUrlUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.dto.response.UserGithubInformation;
 import sssdev.tcc.domain.user.service.UserService;
@@ -79,6 +80,18 @@ public class UserController {
         HttpServletRequest request) {
         LoginUser loginUser = statusUtil.getLoginUser(request);
         ProfileResponse response = userService.updateProfile(body, loginUser.id());
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .data(response)
+            .build());
+    }
+
+    @PatchMapping("/profileUrl")
+    public ResponseEntity<?> updateProfileUrl(@RequestBody UserProfileUrlUpdateRequest body,
+        HttpServletRequest request) {
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        ProfileResponse response = userService.updateProfileUrl(body, loginUser.id());
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")

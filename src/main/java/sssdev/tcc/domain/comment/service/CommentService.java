@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 public class CommentService {
 
     // todo
-    public void deleteComment(Long id) {
+    public void deleteCommentAdmin(Long id) {
     }
 
     // todo
-    public void deletePost(Long id) {
+    public void deletePostAdmin(Long id) {
 
     }
 }

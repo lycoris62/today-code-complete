@@ -111,6 +111,21 @@ public class PostService {
         return PostDetailResponse.of(post, commentRepository, postLikeRepository);
     }
 
+    /**
+     * 게시글 삭제
+     */
+    public void delete(Long id, LoginUser loginUser) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        if (!post.getUser().getId().equals(loginUser.id())) {
+            throw new ServiceException(UNAUTHORIZED);
+        }
+
+        postRepository.delete(post);
+    }
+
     // todo
     public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {
         return null;

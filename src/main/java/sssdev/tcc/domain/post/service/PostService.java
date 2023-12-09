@@ -2,6 +2,7 @@ package sssdev.tcc.domain.post.service;
 
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
+import static sssdev.tcc.global.execption.ErrorCode.UNAUTHORIZED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
@@ -94,7 +96,22 @@ public class PostService {
         postRepository.save(post);
     }
 
-    // todo 
+    @Transactional
+    public PostDetailResponse updatePost(Long id, LoginUser loginUser, PostUpdateRequest request) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        if (!post.getUser().getId().equals(loginUser.id())) {
+            throw new ServiceException(UNAUTHORIZED);
+        }
+
+        post.updateContent(request);
+
+        return PostDetailResponse.of(post, commentRepository, postLikeRepository);
+    }
+
+    // todo
     public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {
         return null;
     }

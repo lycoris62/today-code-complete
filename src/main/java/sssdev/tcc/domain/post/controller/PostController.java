@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,6 +56,20 @@ public class PostController {
 
         return ResponseEntity.ok(RootResponse.<Page<PostDetailResponse>>builder()
             .data(postList)
+            .build());
+    }
+
+    /**
+     * 게시글 단건 조회
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<RootResponse<PostDetailResponse>> getPost(
+        @PathVariable(name = "id") Long id) {
+
+        PostDetailResponse post = postService.getPost(id);
+
+        return ResponseEntity.ok(RootResponse.<PostDetailResponse>builder()
+            .data(post)
             .build());
     }
 

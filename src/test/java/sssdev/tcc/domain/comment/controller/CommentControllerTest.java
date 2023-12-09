@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static sssdev.tcc.global.execption.ErrorCode.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.common.dto.LoginUser;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
@@ -56,13 +59,17 @@ class CommentControllerTest extends ControllerTest {
             given(statusUtil.isLogin(any())).willReturn(false);
             given(commentService.getComments(request.postId(), null)).willReturn(responseList);
 
-            mockMvc.perform(
-                    get("/api/comments").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print()).andExpectAll(status().isOk(),
+            mockMvc.perform(get("/api/comments")
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
                     jsonPath("$.data.size()").value(3),
                     jsonPath("$.data[0].content").value("댓글 내용 0"),
                     jsonPath("$.data[1].content").value("댓글 내용 1"),
-                    jsonPath("$.data[2].content").value("댓글 내용 2"));
+                    jsonPath("$.data[2].content").value("댓글 내용 2")
+                );
         }
 
         @Test
@@ -86,14 +93,12 @@ class CommentControllerTest extends ControllerTest {
 
             given(statusUtil.isLogin(any())).willReturn(true);
             given(statusUtil.getLoginUser(any())).willReturn(loginUser);
-            given(commentService.getComments(any(), any()))
-                .willReturn(responseList);
+            given(commentService.getComments(any(), any())).willReturn(responseList);
 
             mockMvc.perform(
                     get("/api/comments")
                         .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
@@ -119,21 +124,63 @@ class CommentControllerTest extends ControllerTest {
             CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
             String json = objectMapper.writeValueAsString(request);
 
-            CommentResponse response = new CommentResponse(user.getUsername(), request.content(), false);
+            CommentResponse response = new CommentResponse(user.getUsername(), request.content(),
+                false);
 
             given(commentService.createComments(any(), any())).willReturn(response);
 
             mockMvc.perform(
                     post("/api/comments")
                         .content(json)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("댓글 생성 성공"),
                     jsonPath("$.data.writer").value("작성자")
+                );
+        }
+
+        @Test
+        @DisplayName("실패 테스트 - User가 존재하지 않을 때")
+        void create_comments_fail_test_not_exist_user() throws Exception {
+
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            String json = objectMapper.writeValueAsString(request);
+
+            given(commentService.createComments(any(), any())).willThrow(
+                new ServiceException(NOT_EXIST_USER));
+
+            mockMvc.perform(
+                    post("/api/comments")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(status().isBadRequest(),
+                    jsonPath("$.code").value("1000"),
+                    jsonPath("$.message").value("사용자가 없습니다.")
+                );
+        }
+
+        @Test
+        @DisplayName("실패 테스트 - 게시물이 존재하지 않을 때")
+        void create_comments_fail_test_not_exist_post() throws Exception {
+
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            String json = objectMapper.writeValueAsString(request);
+
+            given(commentService.createComments(any(), any())).willThrow(
+                new ServiceException(NOT_EXIST_POST));
+
+            mockMvc.perform(
+                    post("/api/comments")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(status().isBadRequest(),
+                    jsonPath("$.code").value("2000"),
+                    jsonPath("$.message").value("게시물이 없습니다.")
                 );
         }
     }

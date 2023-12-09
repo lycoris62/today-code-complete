@@ -96,6 +96,11 @@ public class PostService {
         postRepository.save(post);
     }
 
+    /**
+     * 게시글 수정 - 관리자가 아닌 사용자용
+     *
+     * @return 변경된 게시글 DTO 반환
+     */
     @Transactional
     public PostDetailResponse updatePost(Long id, LoginUser loginUser, PostUpdateRequest request) {
 

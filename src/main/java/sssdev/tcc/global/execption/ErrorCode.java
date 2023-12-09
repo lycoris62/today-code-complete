@@ -13,7 +13,8 @@ public enum ErrorCode {
     CHECK_USER(HttpStatus.BAD_REQUEST, "1001", "본인이 아닙니다."),
 
     // post 2XXX
-    NOT_EXIST_POST(HttpStatus.BAD_REQUEST, "2000", "게시물이 없습니다."),
+    NOT_EXIST_POST(HttpStatus.NOT_FOUND, "2000", "게시글이 없습니다."),
+
     // comment 3XXX
 
     // admin 4XXX

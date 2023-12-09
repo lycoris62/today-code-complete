@@ -104,4 +104,37 @@ class CommentControllerTest extends ControllerTest {
                 );
         }
     }
+
+    @Nested
+    @DisplayName("게시물 내 댓글 생성")
+    class createComments {
+
+        @Test
+        @DisplayName("성공 테스트")
+        void create_comments_success() throws Exception {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            User user = User.builder().username("작성자").build();
+            setField(user, "id", 1L);
+
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            String json = objectMapper.writeValueAsString(request);
+
+            CommentResponse response = new CommentResponse(user.getUsername(), request.content(), false);
+
+            given(commentService.createComments(any(), any())).willReturn(response);
+
+            mockMvc.perform(
+                    post("/api/comments")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 생성 성공"),
+                    jsonPath("$.data.writer").value("작성자")
+                );
+        }
+    }
 }

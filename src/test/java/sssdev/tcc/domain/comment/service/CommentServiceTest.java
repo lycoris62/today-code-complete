@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static sssdev.tcc.global.execption.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,8 @@ import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
+import sssdev.tcc.global.execption.ErrorCode;
+import sssdev.tcc.global.execption.ServiceException;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -70,7 +73,8 @@ class CommentServiceTest {
             List<CommentResponse> responseList;
 
             for (int i = 0; i < 3; i++) {
-                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post).build();
+                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post)
+                    .build();
                 commentList.add(comment);
             }
 
@@ -98,11 +102,14 @@ class CommentServiceTest {
             List<CommentLike> commentLikeList = new ArrayList<>();
 
             for (int i = 0; i < 3; i++) {
-                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post).build();
+                Comment comment = Comment.builder().content("댓글 내용 " + i).user(user).post(post)
+                    .build();
                 commentList.add(comment);
-                CommentLike commentLike = CommentLike.builder().comment(comment).user(user1).build();
-                if(i % 2 == 0)
+                CommentLike commentLike = CommentLike.builder().comment(comment).user(user1)
+                    .build();
+                if (i % 2 == 0) {
                     commentLikeList.add(commentLike);
+                }
             }
 
             given(commentRepository.findAllByPostId(post.getId())).willReturn(commentList);
@@ -118,17 +125,53 @@ class CommentServiceTest {
 
     }
 
-    @Test
-    @DisplayName("댓글 작성 성공 테스트")
-    void create_comments_test_success() {
-        LoginUser loginUser = new LoginUser(1L, UserRole.USER);
-        CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
-        given(postRepository.findById(request.postId())).willReturn(Optional.of(post));
-        given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+    @Nested
+    @DisplayName("댓글 작성 테스트")
+    class create_comments_test {
 
-        CommentResponse response = commentService.createComments(loginUser, request);
+        @Test
+        @DisplayName("댓글 작성 성공 테스트")
+        void create_comments_test_success() {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+            given(postRepository.findById(request.postId())).willReturn(Optional.of(post));
 
-        assertThat(response.content()).isEqualTo("댓글 내용");
-        assertThat(response.writer()).isEqualTo(user.getUsername());
+            CommentResponse response = commentService.createComments(loginUser, request);
+
+            assertThat(response.content()).isEqualTo("댓글 내용");
+            assertThat(response.writer()).isEqualTo(user.getUsername());
+        }
+
+        @Test
+        @DisplayName("댓글 작성 실패 테스트 - user가 존재하지 않을 때")
+        void create_comments_test_fail_not_exist_user_exception() {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            given(userRepository.findById(loginUser.id())).willThrow(
+                new ServiceException(NOT_EXIST_USER));
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.createComments(loginUser, request));
+
+            assertThat(exception.getCode().getMessage()).isEqualTo("사용자가 없습니다.");
+            assertThat(exception.getCode().getCode()).isEqualTo("1000");
+        }
+
+        @Test
+        @DisplayName("댓글 작성 실패 테스트 - 게시물이 존재하지 않을 때")
+        void create_comments_test_fail_not_exist_post() {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", 1L);
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+            given(postRepository.findById(request.postId())).willThrow(
+                new ServiceException(NOT_EXIST_POST));
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.createComments(loginUser, request));
+
+            assertThat(exception.getCode().getMessage()).isEqualTo("게시물이 없습니다.");
+            assertThat(exception.getCode().getCode()).isEqualTo("2000");
+        }
     }
 }

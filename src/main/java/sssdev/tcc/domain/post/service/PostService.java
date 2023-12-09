@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
+import sssdev.tcc.domain.post.domain.Post;
+import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
@@ -61,6 +63,20 @@ public class PostService {
 
         return postRepository.findAllByUserIdIn(followingUserIdList, pageable)
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
+    }
+
+    @Transactional
+    public void createPost(LoginUser loginUser, PostCreateRequest requestDto) {
+
+        User user = userRepository.findById(loginUser.id())
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
+
+        Post post = Post.builder()
+            .user(user)
+            .content(requestDto.getContent())
+            .build();
+
+        postRepository.save(post);
     }
 
     // todo 

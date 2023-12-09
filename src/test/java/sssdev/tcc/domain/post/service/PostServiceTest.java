@@ -2,8 +2,10 @@ package sssdev.tcc.domain.post.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
+import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
@@ -183,6 +186,51 @@ class PostServiceTest {
                     assertThat(errorCode.getCode()).isEqualTo("1000");
                     assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
                 });
+        }
+
+        @Nested
+        @DisplayName("게시글 생성")
+        class CreatePost {
+
+            @DisplayName("성공 케이스 - 게시글 성공")
+            @Test
+            void create_post_success() {
+                // given
+                User user = User.builder().username("username01").build();
+                setField(user, "id", 1L);
+                LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+                PostCreateRequest requestDto = new PostCreateRequest("content01");
+
+                given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+                // when
+                postService.createPost(loginUser, requestDto);
+
+                // then
+                then(postRepository).should().save(any(Post.class));
+            }
+
+            @DisplayName("실패 케이스 - 사용자가 없음")
+            @Test
+            void create_post_fail_not_exist_user() {
+                // given
+                LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+                PostCreateRequest requestDto = new PostCreateRequest("content01");
+
+                given(userRepository.findById(anyLong()))
+                    .willThrow(new ServiceException(NOT_EXIST_USER));
+
+                // when & then
+                assertThatThrownBy(() -> postService.createPost(loginUser, requestDto))
+                    .isInstanceOf(ServiceException.class)
+                    .satisfies(exception -> {
+                        ErrorCode errorCode = ((ServiceException) exception).getCode();
+                        assertThat(errorCode.getMessage()).isEqualTo("사용자가 없습니다.");
+                        assertThat(errorCode.getCode()).isEqualTo("1000");
+                        assertThat(errorCode.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    });
+            }
         }
     }
 }

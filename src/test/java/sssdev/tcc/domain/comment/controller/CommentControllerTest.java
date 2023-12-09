@@ -3,6 +3,7 @@ package sssdev.tcc.domain.comment.controller;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,10 +16,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.user.domain.User;
+import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
@@ -50,8 +53,8 @@ class CommentControllerTest extends ControllerTest {
 
             String json = objectMapper.writeValueAsString(request);
 
-            given(statusUtil.loginStatus(any())).willReturn(false);
-            given(commentService.getCommentsNonLogin(request.postId())).willReturn(responseList);
+            given(statusUtil.isLogin(any())).willReturn(false);
+            given(commentService.getComments(request.postId(), null)).willReturn(responseList);
 
             mockMvc.perform(
                     get("/api/comments").content(json).contentType(MediaType.APPLICATION_JSON))
@@ -65,7 +68,7 @@ class CommentControllerTest extends ControllerTest {
         @Test
         @DisplayName("로그인을 했을 때 전체 조회 할 경우")
         void get_comments_test_login() throws Exception {
-            LoginUser loginUser = new LoginUser(1L);
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
 
             User user = User.builder().username("작성자").build();
             setField(user, "id", 1L);
@@ -81,16 +84,16 @@ class CommentControllerTest extends ControllerTest {
 
             String json = objectMapper.writeValueAsString(request);
 
-            given(statusUtil.loginStatus(any())).willReturn(true);
+            given(statusUtil.isLogin(any())).willReturn(true);
             given(statusUtil.getLoginUser(any())).willReturn(loginUser);
-            given(commentService.getCommentsLogin(any(), any()))
+            given(commentService.getComments(any(), any()))
                 .willReturn(responseList);
 
             mockMvc.perform(
-                get("/api/comments")
-                    .content(json)
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
+                    get("/api/comments")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),

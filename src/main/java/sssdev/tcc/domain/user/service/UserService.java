@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -129,6 +127,7 @@ public class UserService {
         return ProfileResponse.of(user, followRepository);
     }
 
+    @Transactional
     public UserFollowResponse follow(UserFollowRequest request) {
         User from = userRepository.findById(request.fromUserId())
             .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
@@ -155,10 +154,7 @@ public class UserService {
     }
 
     public List<ProfileListItem> getProfileListAdmin(
-        int page) {
-        Sort.Direction direction = Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, "Desc");
-        Pageable pageable = PageRequest.of(page, 10, sort);
+        Pageable pageable) {
         Page<User> list = userRepository.findAll(pageable);
         if (list.isEmpty()) {
             throw new ServiceException(NOT_EXIST_USER);

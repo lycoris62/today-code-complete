@@ -3,7 +3,6 @@ package sssdev.tcc.domain.comment.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +36,8 @@ public class CommentController {
         if (statusUtil.isLogin(servletRequest)) {
             loginUser = statusUtil.getLoginUser(servletRequest);
         }
-        List<CommentResponse> responseList = commentService.getComments(request.postId(), loginUser);
+        List<CommentResponse> responseList = commentService.getComments(request.postId(),
+            loginUser);
         return ResponseEntity.ok(
             RootResponse.builder().code("200")
                 .message("해당 게시물의 모든 댓글을 가져왔습니다.")
@@ -102,7 +102,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{id}/like")
-    public ResponseEntity<?> cancleLikeComments(@PathVariable(name = "id") Long id,
+    public ResponseEntity<?> cancelLikeComments(@PathVariable(name = "id") Long id,
         HttpServletRequest servletRequest) {
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
         CommentResponse response = commentService.cancelLikeComments(id, loginUser);

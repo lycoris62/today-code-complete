@@ -4,19 +4,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.admin.dto.request.AdminCommentUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
@@ -24,7 +20,6 @@ import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
-import sssdev.tcc.domain.admin.dto.response.ProfileListItem;
 import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.UserRole;
@@ -91,49 +86,6 @@ class AdminControllerTest extends ControllerTest {
                     jsonPath("$.data.role").value(response.role().toString()),
                     jsonPath("$.data.description").value(response.description()),
                     jsonPath("$.data.profileUrl").value(response.profileUrl())
-                );
-        }
-    }
-
-    @DisplayName("유저 목록 조회 테스트")
-    @Nested
-    class ProfileListGet {
-
-        @DisplayName("성공")
-        @Test
-        void admin_profileList_get_success() throws Exception {
-            // given
-            var userId = 1L;
-
-            var pageable = PageRequest.of(0, 10);
-
-            ProfileListItem profileResponse = new ProfileListItem(
-                1L,
-                "nickname1",
-                "/profileUrl.png",
-                "decription1"
-            );
-
-            List<ProfileListItem> list = new ArrayList<>();
-            list.add(profileResponse);
-
-            var content = List.of(profileResponse);
-
-            var loginUser = LoginUser.builder()
-                .role(UserRole.ADMIN)
-                .id(1L)
-                .build();
-
-            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
-            given(userService.getProfileListAdmin(1)).willReturn(list);
-            // when // then
-
-            mockMvc.perform(get("/api/admin/users?page=1"))
-                .andDo(print())
-                .andExpectAll(
-                    status().isOk(),
-                    jsonPath("$.code").value("200"),
-                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }

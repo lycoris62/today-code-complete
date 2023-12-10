@@ -2,6 +2,7 @@ package sssdev.tcc.domain.post.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,7 @@ import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.common.dto.response.RootResponse;
 import sssdev.tcc.global.util.StatusUtil;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
@@ -81,13 +84,17 @@ public class PostController {
      */
     @PostMapping
     public ResponseEntity<?> createPost(
-        PostCreateRequest requestDto,
+        @RequestBody PostCreateRequest requestDto,
         HttpServletRequest servletRequest) {
-
+        log.info("테스트");
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        log.info("테스트;{}", loginUser);
         postService.createPost(loginUser, requestDto);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
     }
 
     /**
@@ -96,7 +103,7 @@ public class PostController {
     @PatchMapping("/{id}")
     public ResponseEntity<RootResponse<PostDetailResponse>> updatePost(
         @PathVariable(name = "id") Long id,
-        PostUpdateRequest requestDto,
+        @RequestBody PostUpdateRequest requestDto,
         HttpServletRequest request) {
 
         LoginUser loginUser = statusUtil.getLoginUser(request);
@@ -118,7 +125,10 @@ public class PostController {
         LoginUser loginUser = statusUtil.getLoginUser(request);
         postService.delete(id, loginUser);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
     }
 
     /**
@@ -132,7 +142,10 @@ public class PostController {
         LoginUser loginUser = statusUtil.getLoginUser(request);
         postService.likePost(id, loginUser);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
     }
 
     /**
@@ -146,6 +159,9 @@ public class PostController {
         LoginUser loginUser = statusUtil.getLoginUser(request);
         postService.unlikePost(id, loginUser);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
     }
 }

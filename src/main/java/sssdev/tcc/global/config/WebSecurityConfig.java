@@ -1,9 +1,8 @@
 package sssdev.tcc.global.config;
 
-import static sssdev.tcc.domain.user.domain.UserRole.ADMIN;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -45,14 +44,16 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
+        http.headers(header -> header.frameOptions(options -> options.sameOrigin()));
 
-        http.authorizeHttpRequests((authorizeHttpRequests) ->
-            authorizeHttpRequests
-                .requestMatchers(HttpMethod.GET).permitAll()
-                .requestMatchers("/api/users/login").permitAll() // '/api/user/'로 시작하는 요청 모두 접근 허가
-                .requestMatchers("/api/admin/**").hasAuthority(ADMIN.getAuthority())
+        http.authorizeHttpRequests(
+            (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers(HttpMethod.GET)
+                .permitAll()
+                .requestMatchers("/api/users/login").permitAll()
+                .requestMatchers(PathRequest.toH2Console()).permitAll()
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
+
         // 필터 관리
         http.addFilterBefore(AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(ExceptionHandleFilter(), AuthorizationFilter.class);

@@ -105,7 +105,7 @@ public class CommentController {
     public ResponseEntity<?> cancleLikeComments(@PathVariable(name = "id") Long id,
         HttpServletRequest servletRequest) {
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
-        CommentResponse response = commentService.cancleLikeComments(id, loginUser);
+        CommentResponse response = commentService.cancelLikeComments(id, loginUser);
 
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")

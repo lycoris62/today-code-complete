@@ -1,22 +1,13 @@
 package sssdev.tcc.domain.comment.service;
 
-import static sssdev.tcc.global.execption.ErrorCode.CHECK_USER;
-import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_COMMENT;
-import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
-import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
-import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
-import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
@@ -99,6 +90,13 @@ public class CommentService {
     }
 
     // todo
+    @Transactional
+    public AdminCommentUpdateResponse updateCommentAdmin(Long id,
+        AdminCommetUpdateRequest request) {
+        Comment comment = commentRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        return AdminCommentUpdateResponse.builder().id(id).content(request.content()).build();
+    }
     public AdminCommentUpdateResponse updateCommentAdmin(Long id,
         AdminCommetUpdateRequest request) {
         Comment comment = commentRepository.findById(id)

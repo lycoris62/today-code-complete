@@ -185,13 +185,10 @@ class CommentServiceTest {
             Comment comment = Comment.builder().content("댓글 내용").user(user).post(post).build();
             setField(comment, "id", 1L);
 
-            CommentLike commentLike = CommentLike.builder().user(user).comment(comment).build();
-
             CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
 
             given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
             given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-            given(commentLikeRepoisoty.findByUserAndComment(any(), any())).willReturn(commentLike);
 
             CommentResponse response = commentService.modifyComments(comment.getId(), request,
                 loginUser);
@@ -212,13 +209,10 @@ class CommentServiceTest {
             Comment comment = Comment.builder().content("댓글 내용").user(user).post(post).build();
             setField(comment, "id", 1L);
 
-            CommentLike commentLike = CommentLike.builder().user(user).comment(comment).build();
-
             CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
 
             given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
             given(userRepository.findById(user.getId())).willReturn(Optional.of(user2));
-            given(commentLikeRepoisoty.findByUserAndComment(any(), any())).willReturn(commentLike);
 
             ServiceException exception = assertThrows(ServiceException.class,
                 () -> commentService.modifyComments(comment.getId(), request, loginUser)

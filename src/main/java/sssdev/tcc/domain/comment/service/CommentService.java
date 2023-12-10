@@ -105,16 +105,10 @@ public class CommentService {
             () -> new ServiceException(NOT_EXIST_USER)
         );
 
-        CommentLike commentLike = commentLikeRepoisoty.findByUserAndComment(user, comment);
-
         boolean likeStatus = false;
 
         if(!comment.getUser().getId().equals(user.getId())) {
             throw new ServiceException(CHECK_USER);
-        }
-
-        if(commentLike != null){
-            likeStatus = true;
         }
 
         comment.updateComment(request.content());

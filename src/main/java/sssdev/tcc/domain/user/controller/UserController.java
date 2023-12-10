@@ -34,8 +34,9 @@ public class UserController {
 
     @GetMapping("/login/github")
     public ResponseEntity<?> loginGithub(@RequestParam(name = "code") String code,
+        HttpServletRequest req,
         HttpServletResponse res) {
-        UserGithubInformation response = userService.loginGithub(code, res);
+        UserGithubInformation response = userService.loginGithub(code, req, res);
         return ResponseEntity.ok(
             RootResponse.builder()
                 .code("200")

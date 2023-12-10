@@ -1,6 +1,7 @@
 package sssdev.tcc.domain.comment.controller;
 
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,9 +10,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static sssdev.tcc.global.execption.ErrorCode.*;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -28,10 +29,10 @@ import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.common.dto.LoginUser;
-import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
+
 
 class CommentControllerTest extends ControllerTest {
 

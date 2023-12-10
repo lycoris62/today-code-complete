@@ -30,6 +30,7 @@ import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
+
 @DisplayName("유저 API 단위 테스트")
 class UserControllerTest extends ControllerTest {
 

@@ -25,6 +25,7 @@ import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
+import sssdev.tcc.global.util.StatusUtil;
 
 @DisplayName("유저 서비스 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -34,12 +35,14 @@ class UserServiceTest {
     UserRepository userRepository;
     @Mock
     FollowRepository followRepository;
+    @Mock
+    StatusUtil statusUtil;
 
     UserService userService;
 
     @BeforeEach
     void init() {
-        this.userService = new UserService(userRepository, followRepository);
+        this.userService = new UserService(userRepository, followRepository, statusUtil);
     }
 
     @DisplayName("프로필 조회")

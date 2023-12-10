@@ -11,7 +11,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
+import sssdev.tcc.domain.admin.dto.request.AdminCommentUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
@@ -25,7 +25,6 @@ import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
-import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
 
 @Service
@@ -42,7 +41,7 @@ public class CommentService {
         List<CommentResponse> responseList = new ArrayList<>();
         CommentResponse response;
         List<CommentLike> commentLikeList = new ArrayList<>();
-        if(loginUser != null){
+        if (loginUser != null) {
             commentLikeList = commentLikeRepoisoty.findByUserId(loginUser.id());
         }
 
@@ -50,15 +49,16 @@ public class CommentService {
 
             boolean likeStatus = false;
 
-            if(!commentLikeList.isEmpty()){
+            if (!commentLikeList.isEmpty()) {
                 for (CommentLike commentLike : commentLikeList) {
-                    if(commentLike.getComment().equals(comment)){
+                    if (commentLike.getComment().equals(comment)) {
                         likeStatus = true;
                         break;
                     }
                 }
             }
-            response = new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+            response = new CommentResponse(comment.getUser().getUsername(), comment.getContent(),
+                likeStatus);
             responseList.add(response);
         }
         return responseList;
@@ -99,15 +99,18 @@ public class CommentService {
     }
 
     // todo
+    @Transactional
     public AdminCommentUpdateResponse updateCommentAdmin(Long id,
-        AdminCommetUpdateRequest request) {
+        AdminCommentUpdateRequest request) {
         Comment comment = commentRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        comment.updateComment(request.content());
         return AdminCommentUpdateResponse.builder().id(id).content(request.content()).build();
     }
 
     @Transactional
-    public CommentResponse modifyComments(Long id, CommentModifyRequest request, LoginUser loginUser) {
+    public CommentResponse modifyComments(Long id, CommentModifyRequest request,
+        LoginUser loginUser) {
         Comment comment = commentRepository.findById(id).orElseThrow(
             () -> new ServiceException(NOT_EXIST_COMMENT)
         );
@@ -118,7 +121,7 @@ public class CommentService {
 
         boolean likeStatus = false;
 
-        if(!comment.getUser().getId().equals(user.getId())) {
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new ServiceException(CHECK_USER);
         }
 

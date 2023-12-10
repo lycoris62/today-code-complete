@@ -4,11 +4,15 @@ import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_OAUTH_TOKEN;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,10 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import sssdev.tcc.domain.admin.dto.ProfileListItem;
-import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
+import sssdev.tcc.domain.admin.dto.response.ProfileListItem;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
@@ -32,8 +35,10 @@ import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.dto.response.UserGithubInformation;
 import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
+import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
+import sssdev.tcc.global.util.StatusUtil;
 
 @RequiredArgsConstructor
 @Service
@@ -41,9 +46,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
+    private final StatusUtil statusUtil;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public UserGithubInformation loginGithub(String code, HttpServletResponse response) {
+    public UserGithubInformation loginGithub(String code, HttpServletRequest request,
+        HttpServletResponse response) {
         String accessToken = getAccessToken(code, response);
         if (accessToken == null) {
             throw new ServiceException(NOT_EXIST_OAUTH_TOKEN);
@@ -61,7 +68,12 @@ public class UserService {
                 .profileUrl(avatar_url)
                 .description("안녕하세요")
                 .build());
+            user = userRepository.findByUsername(id);
         }
+
+        LoginUser loginUser = LoginUser.builder().id(user.get().getId()).role(user.get().getRole())
+            .build();
+        statusUtil.login(loginUser, request);
 
         return new UserGithubInformation(login, id, avatar_url);
     }
@@ -142,11 +154,22 @@ public class UserService {
             user.getProfileUrl(), user.getNickname(), user.getId());
     }
 
-    public Page<ProfileListItem> getProfileListAdmin(AdminUserListGetRequest request,
-        Pageable pageable) {
-        var user = userRepository.findById(request.userID())
-            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
-        return null;
+    public List<ProfileListItem> getProfileListAdmin(
+        int page) {
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "Desc");
+        Pageable pageable = PageRequest.of(page, 10, sort);
+        Page<User> list = userRepository.findAll(pageable);
+        if (list.isEmpty()) {
+            throw new ServiceException(NOT_EXIST_USER);
+        }
+
+        return list.stream()
+            .map(u -> new ProfileListItem(
+                u.getId(),
+                u.getNickname(),
+                u.getProfileUrl(),
+                u.getDescription())).toList();
     }
 
 }

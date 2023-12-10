@@ -34,9 +34,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         HttpMethod.GET.name());
     private static final RequestMatcher commentIgnoredPath = new AntPathRequestMatcher(
         "/api/comments", HttpMethod.GET.name());
-
-    private static final RequestMatcher h2IgnoredPath = new AntPathRequestMatcher(
-        "/h2-console/**", HttpMethod.GET.name());
+    
 
     private final StatusUtil statusUtil;
     private final ObjectMapper objectMapper;
@@ -57,7 +55,6 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return userIgnoredPath.matches(request) || postIgnoredPath.matches(request)
-            || postIdIgnoredPath.matches(request) || commentIgnoredPath.matches(request)
-            || h2IgnoredPath.matches(request);
+            || postIdIgnoredPath.matches(request) || commentIgnoredPath.matches(request);
     }
 }

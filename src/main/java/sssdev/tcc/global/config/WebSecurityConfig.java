@@ -45,6 +45,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
+        http.headers(header -> header.frameOptions(options -> options.sameOrigin()));
 
         http.authorizeHttpRequests(
             (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers(HttpMethod.GET)
@@ -54,6 +55,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
+
         // 필터 관리
         http.addFilterBefore(AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(ExceptionHandleFilter(), AuthorizationFilter.class);

@@ -1,6 +1,9 @@
 package sssdev.tcc.domain.comment.service;
 
-import static sssdev.tcc.global.execption.ErrorCode.*;
+import static sssdev.tcc.global.execption.ErrorCode.CHECK_USER;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_COMMENT;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +11,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
@@ -63,11 +68,11 @@ public class CommentService {
         CommentResponse response;
 
         User user = userRepository.findById(loginUser.id()).orElseThrow(
-            () -> new ServiceException(NOT_EXIST_USER)
+            () -> new ServiceException(ErrorCode.NOT_EXIST_USER)
         );
 
         Post post = postRepository.findById(requestDto.postId()).orElseThrow(
-            () -> new ServiceException(NOT_EXIST_POST)
+            () -> new ServiceException(ErrorCode.NOT_EXIST_POST)
         );
 
         Comment comment = Comment.builder()
@@ -87,12 +92,18 @@ public class CommentService {
     }
 
     // todo
-    public void deleteComment(Long id) {
+    public void deleteCommentAdmin(Long id) {
+        Comment comment = commentRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        commentRepository.delete(comment);
     }
 
     // todo
-    public void deletePost(Long id) {
-
+    public AdminCommentUpdateResponse updateCommentAdmin(Long id,
+        AdminCommetUpdateRequest request) {
+        Comment comment = commentRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        return AdminCommentUpdateResponse.builder().id(id).content(request.content()).build();
     }
 
     @Transactional

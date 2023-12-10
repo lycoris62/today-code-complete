@@ -99,7 +99,8 @@ class AdminControllerTest extends ControllerTest {
         @Test
         void admin_profileList_get_success() throws Exception {
             // given
-            var request = new AdminUserListGetRequest();
+            var userId = 1L;
+            var request = new AdminUserListGetRequest(userId);
             var pageable = PageRequest.of(0, 10);
 
             ProfileListItem profileResponse = new ProfileListItem(

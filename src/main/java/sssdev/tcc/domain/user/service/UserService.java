@@ -144,6 +144,8 @@ public class UserService {
 
     public Page<ProfileListItem> getProfileListAdmin(AdminUserListGetRequest request,
         Pageable pageable) {
+        var user = userRepository.findById(request.userID())
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
         return null;
     }
 

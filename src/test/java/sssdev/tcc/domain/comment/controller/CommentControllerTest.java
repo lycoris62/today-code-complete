@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
@@ -230,6 +231,29 @@ class CommentControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("댓글 삭제 성공")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 기능")
+    class likeComments {
+
+        @Test
+        @DisplayName("댓글 좋아요 기능 성공 테스트")
+        void like_comments_test_success() throws Exception {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            User user1 = User.builder().username("좋아요 누르는 사람").build();
+            setField(user1, "id", 2L);
+
+            Long commentId = 1L;
+
+            mockMvc.perform(post("/api/comments/{commentId}/like", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 좋아요 성공")
                 );
         }
     }

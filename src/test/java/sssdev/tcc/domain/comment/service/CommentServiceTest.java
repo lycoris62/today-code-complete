@@ -197,6 +197,71 @@ class CommentServiceTest {
                 loginUser);
 
             assertThat(response.content()).isEqualTo("수정된 댓글 내용");
+
+
+        }
+
+        @Test
+        @DisplayName("댓글 수정 실패 테스트 - 자신의 댓글이 아닐 때")
+        void modify_connets_test_fail_this_comment_is_not_mine() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+
+            User user2 = User.builder().username("찾는사람").build();
+            setField(user, "id", 2L);
+
+            Comment comment = Comment.builder().content("댓글 내용").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            CommentLike commentLike = CommentLike.builder().user(user).comment(comment).build();
+
+            CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+            given(userRepository.findById(user.getId())).willReturn(Optional.of(user2));
+            given(commentLikeRepoisoty.findByUserAndComment(any(), any())).willReturn(commentLike);
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.modifyComments(comment.getId(), request, loginUser)
+            );
+
+            assertThat(exception.getCode()).isEqualTo(CHECK_USER);
+            assertThat(exception.getCode().getMessage()).isEqualTo("본인이 아닙니다.");
+        }
+
+        @Test
+        @DisplayName("댓글 수정 실패 테스트 - 수정하려는 댓글이 존재하지 않을 때")
+        void modify_connets_test_fail_comment_is_not_exist() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
+            given(commentRepository.findById(any())).willReturn(Optional.empty());
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.modifyComments(any(), request, loginUser)
+            );
+
+            assertThat(exception.getCode()).isEqualTo(NOT_EXIST_COMMENT);
+            assertThat(exception.getCode().getMessage()).isEqualTo("댓글이 없습니다.");
+        }
+
+        @Test
+        @DisplayName("댓글 수정 실패 테스트 - 유저가 존재하지 않을 때")
+        void modify_connets_test_fail_user_is_not_exist() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
+
+            Comment comment = Comment.builder().content("댓글 내용").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+
+            given(userRepository.findById(any())).willReturn(Optional.empty());
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.modifyComments(comment.getId(), request, loginUser)
+            );
+
+            assertThat(exception.getCode()).isEqualTo(NOT_EXIST_USER);
+            assertThat(exception.getCode().getMessage()).isEqualTo("사용자가 없습니다.");
         }
     }
 }

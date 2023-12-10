@@ -242,10 +242,6 @@ class CommentControllerTest extends ControllerTest {
         @Test
         @DisplayName("댓글 좋아요 기능 성공 테스트")
         void like_comments_test_success() throws Exception {
-            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
-            User user1 = User.builder().username("좋아요 누르는 사람").build();
-            setField(user1, "id", 2L);
-
             Long commentId = 1L;
 
             mockMvc.perform(post("/api/comments/{commentId}/like", commentId))
@@ -254,6 +250,25 @@ class CommentControllerTest extends ControllerTest {
                     status().isOk(),
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("댓글 좋아요 성공")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 취소 기능")
+    class like_comments_delete {
+
+        @Test
+        @DisplayName("댓글 좋아요 취소 기능 성공 테스트")
+        void like_comments_delete_success_test() throws Exception {
+            Long commentId = 1L;
+
+            mockMvc.perform(delete("/api/comments/{commentId}/like",commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 좋아요 취소 성공")
                 );
         }
     }

@@ -89,6 +89,7 @@ public class PostController {
         log.info("테스트");
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
         log.info("테스트;{}", loginUser);
+        postService.createPost(loginUser, requestDto);
 
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
@@ -124,7 +125,10 @@ public class PostController {
         LoginUser loginUser = statusUtil.getLoginUser(request);
         postService.delete(id, loginUser);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .build());
     }
 
     /**

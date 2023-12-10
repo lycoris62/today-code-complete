@@ -134,7 +134,20 @@ public class PostService {
     }
 
     // todo
-    public AdminPostUpdateResponse updatePost(Long id, AdminPostUpdateRequest request) {
-        return null;
+    @Transactional
+    public AdminPostUpdateResponse updatePostAdmin(Long id, AdminPostUpdateRequest request) {
+        PostUpdateRequest postRequest = new PostUpdateRequest(request.content());
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        post.updateContent(postRequest);
+        return AdminPostUpdateResponse.builder().id(id).content(request.content()).build();
+    }
+
+    // todo
+    @Transactional
+    public void deletePostAdmin(Long id) {
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+        postRepository.delete(post);
     }
 }

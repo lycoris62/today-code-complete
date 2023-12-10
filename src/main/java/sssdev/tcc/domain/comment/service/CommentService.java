@@ -1,13 +1,17 @@
 package sssdev.tcc.domain.comment.service;
 
+import static sssdev.tcc.global.execption.ErrorCode.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
+import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
@@ -59,11 +63,11 @@ public class CommentService {
         CommentResponse response;
 
         User user = userRepository.findById(loginUser.id()).orElseThrow(
-            () -> new ServiceException(ErrorCode.NOT_EXIST_USER)
+            () -> new ServiceException(NOT_EXIST_USER)
         );
 
         Post post = postRepository.findById(requestDto.postId()).orElseThrow(
-            () -> new ServiceException(ErrorCode.NOT_EXIST_POST)
+            () -> new ServiceException(NOT_EXIST_POST)
         );
 
         Comment comment = Comment.builder()
@@ -91,4 +95,30 @@ public class CommentService {
 
     }
 
+    @Transactional
+    public CommentResponse modifyComments(Long id, CommentModifyRequest request, LoginUser loginUser) {
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        CommentLike commentLike = commentLikeRepoisoty.findByUserAndComment(user, comment);
+
+        boolean likeStatus = false;
+
+        if(!comment.getUser().getId().equals(user.getId())) {
+            throw new ServiceException(CHECK_USER);
+        }
+
+        if(commentLike != null){
+            likeStatus = true;
+        }
+
+        comment.updateComment(request.content());
+
+        return new CommentResponse(user.getUsername(), comment.getContent(), likeStatus);
+    }
 }

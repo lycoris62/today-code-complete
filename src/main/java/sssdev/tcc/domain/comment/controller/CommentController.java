@@ -86,4 +86,17 @@ public class CommentController {
             .message("댓글 삭제 성공")
             .build());
     }
+
+    @PostMapping("/comments/{id}/like")
+    public ResponseEntity<?> likeComments(@PathVariable(name = "id") Long id,
+        HttpServletRequest servletRequest) {
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        CommentResponse response = commentService.likeComments(id, loginUser);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 좋아요 성공")
+            .data(response)
+            .build());
+    }
 }

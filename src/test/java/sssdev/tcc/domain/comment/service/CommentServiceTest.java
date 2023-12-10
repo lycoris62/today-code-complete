@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
+import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.repository.CommentLikeRepoisoty;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
@@ -170,6 +171,32 @@ class CommentServiceTest {
 
             assertThat(exception.getCode().getMessage()).isEqualTo("게시글이 없습니다.");
             assertThat(exception.getCode().getCode()).isEqualTo("2000");
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 수정 테스트")
+    class modify_comments_test {
+
+        @Test
+        @DisplayName("댓글 수정 성공 테스트")
+        void modify_connets_test_success() {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            Comment comment = Comment.builder().content("댓글 내용").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            CommentLike commentLike = CommentLike.builder().user(user).comment(comment).build();
+
+            CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+            given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+            given(commentLikeRepoisoty.findByUserAndComment(any(), any())).willReturn(commentLike);
+
+            CommentResponse response = commentService.modifyComments(comment.getId(), request,
+                loginUser);
+
+            assertThat(response.content()).isEqualTo("수정된 댓글 내용");
         }
     }
 }

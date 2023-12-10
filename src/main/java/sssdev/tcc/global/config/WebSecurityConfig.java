@@ -2,6 +2,7 @@ package sssdev.tcc.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,12 +45,12 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
-        
+
         http.authorizeHttpRequests(
             (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers(HttpMethod.GET)
                 .permitAll()
                 .requestMatchers("/api/users/login").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers(PathRequest.toH2Console()).permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );

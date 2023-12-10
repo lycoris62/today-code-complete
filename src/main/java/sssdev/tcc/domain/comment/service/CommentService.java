@@ -165,4 +165,25 @@ public class CommentService {
 
         return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
     }
+
+    public CommentResponse cancelLikeComments(Long id, LoginUser loginUser) {
+
+        boolean likeStatus = false;
+
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        CommentLike commentLike = commentLikeRepoisoty.findByUserAndComment(user, comment);
+
+        commentLikeRepoisoty.delete(commentLike);
+
+        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+    }
+
+
 }

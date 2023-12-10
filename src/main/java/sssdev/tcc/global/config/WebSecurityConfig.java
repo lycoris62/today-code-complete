@@ -1,7 +1,5 @@
 package sssdev.tcc.global.config;
 
-import static sssdev.tcc.domain.user.domain.UserRole.ADMIN;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.filter.AuthorizationFilter;
 import sssdev.tcc.global.filter.ExceptionHandleFilter;
 import sssdev.tcc.global.util.StatusUtil;
@@ -46,11 +45,11 @@ public class WebSecurityConfig {
         // CSRF 설정
         http.csrf((csrf) -> csrf.disable());
 
-        http.authorizeHttpRequests((authorizeHttpRequests) ->
-            authorizeHttpRequests
-                .requestMatchers(HttpMethod.GET).permitAll()
-                .requestMatchers("/api/users/login").permitAll() // '/api/user/'로 시작하는 요청 모두 접근 허가
-                .requestMatchers("/api/admin/**").hasAuthority(ADMIN.getAuthority())
+        http.authorizeHttpRequests(
+            (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers(HttpMethod.GET)
+                .permitAll().requestMatchers("/api/users/login")
+                .permitAll() // '/api/user/'로 시작하는 요청 모두 접근 허가
+                .requestMatchers("/api/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
         // 필터 관리

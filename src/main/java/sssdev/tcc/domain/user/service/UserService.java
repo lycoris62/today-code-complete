@@ -129,6 +129,7 @@ public class UserService {
         return ProfileResponse.of(user, followRepository);
     }
 
+    @Transactional
     public UserFollowResponse follow(UserFollowRequest request) {
         User from = userRepository.findById(request.fromUserId())
             .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));

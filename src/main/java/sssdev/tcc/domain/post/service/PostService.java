@@ -1,6 +1,8 @@
 package sssdev.tcc.domain.post.service;
 
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
+import static sssdev.tcc.global.execption.ErrorCode.UNAUTHORIZED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
 import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.repository.PostRepository;
@@ -65,6 +68,20 @@ public class PostService {
             .map(post -> PostDetailResponse.of(post, commentRepository, postLikeRepository));
     }
 
+    /**
+     * 게시글 단건 조회
+     */
+    public PostDetailResponse getPost(Long id) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        return PostDetailResponse.of(post, commentRepository, postLikeRepository);
+    }
+
+    /**
+     * 게시글 생성
+     */
     @Transactional
     public void createPost(LoginUser loginUser, PostCreateRequest requestDto) {
 
@@ -77,6 +94,43 @@ public class PostService {
             .build();
 
         postRepository.save(post);
+    }
+
+    /**
+     * 게시글 수정 - 관리자가 아닌 사용자용
+     *
+     * @return 변경된 게시글 DTO 반환
+     */
+    @Transactional
+    public PostDetailResponse updatePost(Long id, LoginUser loginUser, PostUpdateRequest request) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        checkSameUser(loginUser, post);
+
+        post.updateContent(request);
+
+        return PostDetailResponse.of(post, commentRepository, postLikeRepository);
+    }
+
+    /**
+     * 게시글 삭제
+     */
+    public void delete(Long id, LoginUser loginUser) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        checkSameUser(loginUser, post);
+
+        postRepository.delete(post);
+    }
+
+    private void checkSameUser(LoginUser loginUser, Post post) {
+        if (!post.getUser().getId().equals(loginUser.id())) {
+            throw new ServiceException(UNAUTHORIZED);
+        }
     }
 
     // todo

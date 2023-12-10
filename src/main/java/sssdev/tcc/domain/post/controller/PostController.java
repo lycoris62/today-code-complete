@@ -5,12 +5,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.post.dto.request.PostCreateRequest;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -59,6 +63,20 @@ public class PostController {
     }
 
     /**
+     * 게시글 단건 조회
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<RootResponse<PostDetailResponse>> getPost(
+        @PathVariable(name = "id") Long id) {
+
+        PostDetailResponse post = postService.getPost(id);
+
+        return ResponseEntity.ok(RootResponse.<PostDetailResponse>builder()
+            .data(post)
+            .build());
+    }
+
+    /**
      * 게시글 생성
      */
     @PostMapping
@@ -68,6 +86,37 @@ public class PostController {
 
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
         postService.createPost(loginUser, requestDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 게시글 수정
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<RootResponse<PostDetailResponse>> updatePost(
+        @PathVariable(name = "id") Long id,
+        PostUpdateRequest requestDto,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        PostDetailResponse post = postService.updatePost(id, loginUser, requestDto);
+
+        return ResponseEntity.ok(RootResponse.<PostDetailResponse>builder()
+            .data(post)
+            .build());
+    }
+
+    /**
+     * 게시글 삭제
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> updatePost(
+        @PathVariable(name = "id") Long id,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        postService.delete(id, loginUser);
 
         return ResponseEntity.ok().build();
     }

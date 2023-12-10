@@ -5,10 +5,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
+import static sssdev.tcc.global.execption.ErrorCode.UNAUTHORIZED;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -26,12 +30,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.post.domain.Post;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.dto.response.PostDetailResponse;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.common.dto.LoginUser;
+import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
@@ -51,8 +57,56 @@ class PostControllerTest extends ControllerTest {
     StatusUtil statusUtil;
 
     @Nested
-    @DisplayName("게시글 목록 조회")
+    @DisplayName("게시글 단건 조회")
     class PostGet {
+
+        @DisplayName("성공 케이스 - 단건 게시글")
+        @Test
+        void get_post_success() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+            PostDetailResponse responseDto = PostDetailResponse.of(post1, commentRepository,
+                postLikeRepository);
+            given(postService.getPost(user.getId())).willReturn(responseDto);
+
+            // when && then
+            mockMvc.perform(get("/api/posts/{id}", user.getId())
+                    .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.data.content").value(post1.getContent()),
+                    jsonPath("$.data.username").value(user.getUsername())
+                );
+        }
+
+        @DisplayName("실패 케이스 - 없는 게시글")
+        @Test
+        void get_post_fail_not_exist_post() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            given(postService.getPost(user.getId()))
+                .willThrow(new ServiceException(NOT_EXIST_POST));
+
+            // when && then
+            mockMvc.perform(get("/api/posts/{id}", user.getId())
+                    .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isNotFound(),
+                    jsonPath("$.message").value("게시글이 없습니다."),
+                    jsonPath("$.code").value("2000")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 목록 조회")
+    class PostsGet {
 
         String jsonPath = "$.data.content[?(@.content == '%s')]";
 
@@ -200,6 +254,146 @@ class PostControllerTest extends ControllerTest {
                     jsonPath("$.data.content[?(@.content == '%s')]", "content03").exists()
                 );
 
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 수정")
+    class PostUpdate {
+
+        @DisplayName("성공 케이스 - 게시글 수정")
+        @Test
+        void update_post_success() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            PostDetailResponse responseDto = PostDetailResponse
+                .of(post1, commentRepository, postLikeRepository);
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            given(postService
+                .updatePost(anyLong(), any(LoginUser.class), any(PostUpdateRequest.class)))
+                .willReturn(responseDto);
+
+            String json = objectMapper.writeValueAsString(requestDto);
+
+            // when && then
+            mockMvc.perform(patch("/api/posts/{id}", post1.getId())
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.data.content").value(requestDto.getContent()),
+                    jsonPath("$.data.username").value(user.getUsername())
+                );
+        }
+
+        @DisplayName("실패 케이스 - 다른 사용자")
+        @Test
+        void update_post_fail_not_unauthorized() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            given(postService
+                .updatePost(anyLong(), any(LoginUser.class), any(PostUpdateRequest.class)))
+                .willThrow(new ServiceException(UNAUTHORIZED));
+
+            String json = objectMapper.writeValueAsString(requestDto);
+
+            // when && then
+            mockMvc.perform(patch("/api/posts/{id}", post1.getId())
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isUnauthorized(),
+                    jsonPath("$.message").value("권한이 없습니다."),
+                    jsonPath("$.code").value("5001")
+                );
+        }
+
+        @DisplayName("실패 케이스 - 없는 게시글")
+        @Test
+        void update_post_fail_not_exist_post() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            PostUpdateRequest requestDto = new PostUpdateRequest("content02");
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            given(postService
+                .updatePost(anyLong(), any(LoginUser.class), any(PostUpdateRequest.class)))
+                .willThrow(new ServiceException(NOT_EXIST_POST));
+
+            String json = objectMapper.writeValueAsString(requestDto);
+
+            // when && then
+            mockMvc.perform(patch("/api/posts/{id}", post1.getId())
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isNotFound(),
+                    jsonPath("$.message").value("게시글이 없습니다."),
+                    jsonPath("$.code").value("2000")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 삭제")
+    class PostDelete {
+
+        @DisplayName("성공 케이스 - 게시글 삭제")
+        @Test
+        void delete_post_success() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            // when && then
+            mockMvc.perform(delete("/api/posts/{id}", post1.getId()))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk()
+                );
         }
     }
 }

@@ -280,4 +280,27 @@ class CommentServiceTest {
             verify(commentRepository, times(1)).delete(any());
         }
     }
+
+    @Nested
+    @DisplayName("댓글 좋아요 테스트")
+    class like_comments_test {
+
+        @Test
+        @DisplayName("댓글 좋아요 성공 테스트")
+        void like_comments_test_success() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            User user1 = User.builder().username("좋아요 누르는 사람").build();
+            setField(user1, "id", 2L);
+
+            Comment comment = Comment.builder().content("좋아요 댓글").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+            given(userRepository.findById(user1.getId())).willReturn(Optional.of(user1));
+
+            CommentResponse commentResponse = commentService.likeComments(comment.getId(), loginUser);
+
+            assertThat(commentResponse.likeStatus()).isEqualTo(true);
+        }
+    }
 }

@@ -4,6 +4,7 @@ import static sssdev.tcc.global.execption.ErrorCode.CHECK_USER;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_COMMENT;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_POST;
 import static sssdev.tcc.global.execption.ErrorCode.NOT_EXIST_USER;
+import static sssdev.tcc.global.execption.ErrorCode.YOUR_COMMENT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,4 +126,64 @@ public class CommentService {
 
         return new CommentResponse(user.getUsername(), comment.getContent(), likeStatus);
     }
+
+    public void deleteComments(Long id, LoginUser loginUser) {
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        if(!comment.getUser().equals(user)){
+            throw new ServiceException(CHECK_USER);
+        }
+
+        commentRepository.delete(comment);
+    }
+
+    public CommentResponse likeComments(Long id, LoginUser loginUser) {
+
+        boolean likeStatus = true;
+
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        if(comment.getUser().equals(user)) {
+            throw new ServiceException(YOUR_COMMENT);
+        }
+
+        CommentLike commentLike = CommentLike.builder().comment(comment).user(user).build();
+
+        commentLikeRepoisoty.save(commentLike);
+
+        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+    }
+
+    public CommentResponse cancelLikeComments(Long id, LoginUser loginUser) {
+
+        boolean likeStatus = false;
+
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        CommentLike commentLike = commentLikeRepoisoty.findByUserAndComment(user, comment);
+
+        commentLikeRepoisoty.delete(commentLike);
+
+        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+    }
+
+
 }

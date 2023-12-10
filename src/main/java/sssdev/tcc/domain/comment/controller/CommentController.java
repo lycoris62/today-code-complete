@@ -3,7 +3,9 @@ package sssdev.tcc.domain.comment.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,5 +73,45 @@ public class CommentController {
             .data(response)
             .build());
 
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<?> deleteComments(@PathVariable(name = "id") Long id,
+        HttpServletRequest servletRequest) {
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        commentService.deleteComments(id, loginUser);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 삭제 성공")
+            .build());
+    }
+
+    @PostMapping("/comments/{id}/like")
+    public ResponseEntity<?> likeComments(@PathVariable(name = "id") Long id,
+        HttpServletRequest servletRequest) {
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        CommentResponse response = commentService.likeComments(id, loginUser);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 좋아요 성공")
+            .data(response)
+            .build()
+        );
+    }
+
+    @DeleteMapping("/comments/{id}/like")
+    public ResponseEntity<?> cancleLikeComments(@PathVariable(name = "id") Long id,
+        HttpServletRequest servletRequest) {
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        CommentResponse response = commentService.cancelLikeComments(id, loginUser);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 좋아요 취소 성공")
+            .data(response)
+            .build()
+        );
     }
 }

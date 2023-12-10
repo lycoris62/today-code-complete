@@ -213,6 +213,26 @@ class CommentControllerTest extends ControllerTest {
                     jsonPath("$.data.content").value("바뀐 댓글 내용")
                 );
         }
+
+        @Test
+        @DisplayName("댓글 내용 수정 기능 실패 테스트 - 자신의 댓글만 수정 / 삭제할 수 있습니다.")
+        void modify_comments_test_fail_check_user_exception() throws Exception {
+            Long commentId = 1L;
+            CommentModifyRequest request = new CommentModifyRequest("댓글 수정 내용");
+            String json = objectMapper.writeValueAsString(request);
+            given(commentService.modifyComments(any(), any(), any())).willThrow(
+                new ServiceException(CHECK_USER));
+
+            mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.code").value("1001"),
+                    jsonPath("$.message").value("본인이 아닙니다.")
+                );
+        }
     }
 
     @Nested
@@ -242,14 +262,19 @@ class CommentControllerTest extends ControllerTest {
         @Test
         @DisplayName("댓글 좋아요 기능 성공 테스트")
         void like_comments_test_success() throws Exception {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
             Long commentId = 1L;
+            CommentResponse commentResponse = new CommentResponse("작성자", "댓글 내용", true);
+
+            given(commentService.likeComments(any(), any())).willReturn(commentResponse);
 
             mockMvc.perform(post("/api/comments/{commentId}/like", commentId))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.code").value("200"),
-                    jsonPath("$.message").value("댓글 좋아요 성공")
+                    jsonPath("$.message").value("댓글 좋아요 성공"),
+                    jsonPath("$.data.likeStatus").value(true)
                 );
         }
     }
@@ -261,14 +286,19 @@ class CommentControllerTest extends ControllerTest {
         @Test
         @DisplayName("댓글 좋아요 취소 기능 성공 테스트")
         void like_comments_delete_success_test() throws Exception {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
             Long commentId = 1L;
+            CommentResponse commentResponse = new CommentResponse("작성자", "댓글 내용", false);
 
-            mockMvc.perform(delete("/api/comments/{commentId}/like",commentId))
+            given(commentService.cancelLikeComments(any(), any())).willReturn(commentResponse);
+
+            mockMvc.perform(delete("/api/comments/{commentId}/like", commentId))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.code").value("200"),
-                    jsonPath("$.message").value("댓글 좋아요 취소 성공")
+                    jsonPath("$.message").value("댓글 좋아요 취소 성공"),
+                    jsonPath("$.data.likeStatus").value(false)
                 );
         }
     }

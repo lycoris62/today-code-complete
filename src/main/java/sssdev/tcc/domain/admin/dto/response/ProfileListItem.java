@@ -1,4 +1,4 @@
-package sssdev.tcc.domain.admin.dto;
+package sssdev.tcc.domain.admin.dto.response;
 
 public record ProfileListItem(
     Long id,

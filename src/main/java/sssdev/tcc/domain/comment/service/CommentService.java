@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
+import sssdev.tcc.domain.admin.dto.request.AdminCommentUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.domain.CommentLike;
@@ -97,7 +97,7 @@ public class CommentService {
     // todo
     @Transactional
     public AdminCommentUpdateResponse updateCommentAdmin(Long id,
-        AdminCommetUpdateRequest request) {
+        AdminCommentUpdateRequest request) {
         Comment comment = commentRepository.findById(id)
             .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
         return AdminCommentUpdateResponse.builder().id(id).content(request.content()).build();

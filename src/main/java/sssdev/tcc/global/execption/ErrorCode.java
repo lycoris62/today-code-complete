@@ -16,7 +16,7 @@ public enum ErrorCode {
     NOT_EXIST_POST(HttpStatus.NOT_FOUND, "2000", "게시글이 없습니다."),
 
     // comment 3XXX
-
+    NOT_EXIST_COMMENT(HttpStatus.NOT_FOUND, "3000", "댓글이 없습니다."),
     // admin 4XXX
 
     // global 5XXX

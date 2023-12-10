@@ -25,6 +25,7 @@ import sssdev.tcc.domain.user.repository.FollowRepository;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
+import sssdev.tcc.global.util.StatusUtil;
 
 @DisplayName("유저 서비스 테스트")
 @ExtendWith(MockitoExtension.class)
@@ -34,12 +35,14 @@ class UserServiceTest {
     UserRepository userRepository;
     @Mock
     FollowRepository followRepository;
+    @Mock
+    StatusUtil statusUtil;
 
     UserService userService;
 
     @BeforeEach
     void init() {
-        this.userService = new UserService(userRepository, followRepository);
+        this.userService = new UserService(userRepository, followRepository, statusUtil);
     }
 
     @DisplayName("프로필 조회")
@@ -65,7 +68,7 @@ class UserServiceTest {
             given(followRepository.countFollowerByToId(userId)).willReturn(followerCount);
             given(followRepository.countFollowingByFromId(userId)).willReturn(followingCount);
             // when
-            ProfileResponse profile = userService.getProfile(userId);
+            ProfileResponse profile = userService.getProfileList(userId);
             // then
             then(profile.nickname()).isEqualTo(user.getNickname());
             then(profile.followerCount()).isEqualTo(followerCount);
@@ -81,7 +84,7 @@ class UserServiceTest {
             var userId = 1L;
             // when
             ServiceException ex = assertThrows(ServiceException.class,
-                () -> userService.getProfile(userId));
+                () -> userService.getProfileList(userId));
             // then
             then(ex.getCode()).isEqualTo(NOT_EXIST_USER);
         }
@@ -103,7 +106,7 @@ class UserServiceTest {
             given(userRepository.findById(userId2)).willThrow(new ServiceException(NOT_EXIST_USER));
             // when
             ServiceException exception = assertThrows(ServiceException.class,
-                () -> userService.getProfile(userId2));
+                () -> userService.getProfileList(userId2));
             // then
             assertEquals("사용자가 없습니다.", exception.getCode().getMessage());
             assertEquals("1000", exception.getCode().getCode());

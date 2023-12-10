@@ -35,6 +35,7 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String description;
+
     @Column(nullable = false)
     private String profileUrl;
 
@@ -59,9 +60,16 @@ public class User extends BaseEntity {
         }
     }
 
-    public void urlUpdate(UserProfileUpdateRequest request) {
-        this.nickname = request.nickname();
-        this.description = request.description();
+    public void updateRol(UserRole role) {
+        if (role != null) {
+            this.role = role;
+        }
+    }
+
+    public void updateUrl(String profileUrl) {
+        if (profileUrl != null) {
+            this.profileUrl = profileUrl;
+        }
     }
 
     public long getFollowingCount(FollowRepository repository) {

@@ -12,6 +12,7 @@ public class StatusUtil {
 
     private final String LOGIN_USER = "login_user";
 
+
     public LoginUser getLoginUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -19,6 +20,7 @@ public class StatusUtil {
         }
         return (LoginUser) session.getAttribute(LOGIN_USER);
     }
+
 
     public void login(LoginUser data, HttpServletRequest request) {
         HttpSession session = request.getSession(true);
@@ -28,5 +30,10 @@ public class StatusUtil {
     public void clearSession(HttpServletRequest request) {
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(0);
+    }
+
+    public boolean isLogin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null;
     }
 }

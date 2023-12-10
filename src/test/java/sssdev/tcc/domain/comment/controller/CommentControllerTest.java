@@ -3,6 +3,7 @@ package sssdev.tcc.domain.comment.controller;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
+import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
 import sssdev.tcc.domain.comment.dto.response.CommentResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
@@ -39,7 +41,7 @@ class CommentControllerTest extends ControllerTest {
 
     @Nested
     @DisplayName("게시물 내 댓글 전체 조회")
-    class get_comments_test {
+    class getComments {
 
         @Test
         @DisplayName("로그인을 하지 않았을 때 전체 조회 할 경우")
@@ -50,7 +52,7 @@ class CommentControllerTest extends ControllerTest {
             List<CommentResponse> responseList = new ArrayList<>();
 
             for (int i = 0; i < 3; i++) {
-                CommentResponse response = new CommentResponse("작성자", "댓글 내용 " + i, null);
+                CommentResponse response = new CommentResponse("작성자", "댓글 내용 " + i, false);
                 responseList.add(response);
             }
 
@@ -181,6 +183,32 @@ class CommentControllerTest extends ControllerTest {
                 .andExpectAll(status().isNotFound(),
                     jsonPath("$.code").value("2000"),
                     jsonPath("$.message").value("게시글이 없습니다.")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 내용 수정")
+    class modifyComments {
+
+        @Test
+        @DisplayName("댓글 내용 수정 기능 성공 테스트")
+        void modify_comments_test_success() throws Exception {
+            Long commentId = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            CommentModifyRequest request = new CommentModifyRequest("바뀐 댓글 내용");
+            String json = objectMapper.writeValueAsString(request);
+            CommentResponse response = new CommentResponse("작성자", request.content(), false);
+            given(commentService.modifyComments(any(), any(), any())).willReturn(response);
+
+            mockMvc.perform(patch("/api/comments/{commentId}", commentId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+                .andDo(print())
+                .andExpectAll(status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 수정 성공"),
+                    jsonPath("$.data.content").value("바뀐 댓글 내용")
                 );
         }
     }

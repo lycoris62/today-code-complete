@@ -1,7 +1,6 @@
 package sssdev.tcc.domain.comment.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import java.util.List;
@@ -30,7 +29,7 @@ class CommentRepositoryTest extends RepositoryTest {
     @BeforeEach
     void setUp() {
         User user = User.builder().description("").nickname("")
-            .username("").password("").profileUrl("").build();
+            .username("").profileUrl("").build();
         setField(user, "id", 1L);
         Post post = Post.builder().content("").user(user).build();
         setField(post, "id", 1L);

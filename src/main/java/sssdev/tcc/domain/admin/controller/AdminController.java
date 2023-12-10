@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
@@ -62,9 +64,20 @@ public class AdminController {
             .build());
     }
 
+    @PatchMapping("/comments/{id}")
+    public ResponseEntity<?> updateComment(@PathVariable(name = "id") Long id,
+        @RequestBody AdminCommetUpdateRequest request) {
+        AdminCommentUpdateResponse body = commentService.updateCommentAdmin(id, request);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .data(body)
+            .build());
+    }
+
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<?> deletePost(@PathVariable(name = "id") Long id) {
-        commentService.deletePostAdmin(id);
+        postService.deletePostAdmin(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")

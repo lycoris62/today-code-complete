@@ -20,11 +20,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
+import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.domain.user.service.UserService;
@@ -39,6 +42,8 @@ class AdminControllerTest extends ControllerTest {
     UserService userService;
     @MockBean
     PostService postService;
+    @MockBean
+    CommentService commentService;
     @MockBean
     StatusUtil statusUtil;
 
@@ -142,26 +147,6 @@ class AdminControllerTest extends ControllerTest {
         }
     }
 
-    @DisplayName("댓글 삭제 테스트")
-    @Nested
-    class CommentDelete {
-
-        @DisplayName("성공")
-        @Test
-        void delete_comment_success() throws Exception {
-            // given
-            var commentId = 1L;
-            // when // then
-            mockMvc.perform(delete("/api/admin/comments/{id}", commentId))
-                .andDo(print())
-                .andExpectAll(
-                    status().isOk(),
-                    jsonPath("$.code").value("200"),
-                    jsonPath("$.message").value("성공했습니다.")
-                );
-        }
-    }
-
 
     @DisplayName("게시글 삭제 테스트")
     @Nested
@@ -185,14 +170,16 @@ class AdminControllerTest extends ControllerTest {
 
     @DisplayName("게시글 수정 테스트")
     @Nested
-    class CommentUpdate {
+    class PostUpdate {
 
         @DisplayName("성공")
         @Test
-        void comment_update_success() throws Exception {
+        void post_update_success() throws Exception {
             // given
+            var userId = 1L;
             var postId = 1L;
             var request = AdminPostUpdateRequest.builder()
+                .userId(userId)
                 .content("change content")
                 .build();
             var response = AdminPostUpdateResponse.builder()
@@ -212,6 +199,62 @@ class AdminControllerTest extends ControllerTest {
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("성공했습니다."),
                     jsonPath("$.data.content").value(response.content())
+                );
+        }
+    }
+
+
+    @DisplayName("댓글 수정 테스트")
+    @Nested
+    class CommentUpdate {
+
+        @DisplayName("성공")
+        @Test
+        void comment_update_success() throws Exception {
+            // given
+            var userId = 1L;
+            var postId = 1L;
+            var request = AdminCommetUpdateRequest.builder()
+                .userId(userId)
+                .content("change content")
+                .build();
+            var response = AdminCommentUpdateResponse.builder()
+                .id(postId)
+                .content(request.content())
+                .build();
+
+            given(commentService.updateCommentAdmin(eq(postId), any())).willReturn(response);
+            // when // then
+            mockMvc.perform(patch("/api/admin/comments/{id}", postId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다."),
+                    jsonPath("$.data.content").value(response.content())
+                );
+        }
+    }
+
+    @DisplayName("댓글 삭제 테스트")
+    @Nested
+    class CommentDelete {
+
+        @DisplayName("성공")
+        @Test
+        void delete_comment_success() throws Exception {
+            // given
+            var commentId = 1L;
+            // when // then
+            mockMvc.perform(delete("/api/admin/comments/{id}", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }

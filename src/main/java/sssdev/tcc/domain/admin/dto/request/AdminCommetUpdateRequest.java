@@ -3,7 +3,7 @@ package sssdev.tcc.domain.admin.dto.request;
 import lombok.Builder;
 
 @Builder
-public record AdminPostUpdateRequest(
+public record AdminCommetUpdateRequest(
     Long userId,
     String content
 ) {

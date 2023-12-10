@@ -441,4 +441,42 @@ class PostServiceTest {
                 });
         }
     }
+
+    @Nested
+    @DisplayName("게시글 좋아요")
+    class PostLike {
+
+        @DisplayName("성공 케이스 - 게시글 좋아요 추가")
+        @Test
+        void post_like_success() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+
+            given(postRepository.findById(anyLong())).willReturn(Optional.of(post1));
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            // when && then
+            postService.likePost(post1.getId(), loginUser);
+        }
+
+        @DisplayName("성공 케이스 - 게시글 좋아요 삭제")
+        @Test
+        void post_unlike_success() {
+            // given
+            User user = User.builder().username("username01").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+            Post post1 = Post.builder().content("content01").user(user).build();
+            setField(post1, "id", 1L);
+
+            given(postRepository.findById(anyLong())).willReturn(Optional.of(post1));
+
+            // when && then
+            postService.unlikePost(post1.getId(), loginUser);
+        }
+    }
 }

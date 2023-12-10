@@ -25,7 +25,6 @@ import sssdev.tcc.domain.post.repository.PostRepository;
 import sssdev.tcc.domain.user.domain.User;
 import sssdev.tcc.domain.user.repository.UserRepository;
 import sssdev.tcc.global.common.dto.LoginUser;
-import sssdev.tcc.global.execption.ErrorCode;
 import sssdev.tcc.global.execption.ServiceException;
 
 @Service
@@ -58,7 +57,7 @@ public class CommentService {
                     }
                 }
             }
-            response = new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+            response = new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
             responseList.add(response);
         }
         return responseList;
@@ -124,7 +123,7 @@ public class CommentService {
 
         comment.updateComment(request.content());
 
-        return new CommentResponse(user.getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(user.getNickname(), comment.getContent(), likeStatus);
     }
 
     public void deleteComments(Long id, LoginUser loginUser) {
@@ -163,7 +162,7 @@ public class CommentService {
 
         commentLikeRepoisoty.save(commentLike);
 
-        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
     }
 
     public CommentResponse cancelLikeComments(Long id, LoginUser loginUser) {
@@ -182,8 +181,6 @@ public class CommentService {
 
         commentLikeRepoisoty.delete(commentLike);
 
-        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
     }
-
-
 }

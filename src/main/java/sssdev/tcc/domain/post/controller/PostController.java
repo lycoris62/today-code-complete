@@ -120,4 +120,32 @@ public class PostController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 게시글 좋아요 추가
+     */
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> likePost(
+        @PathVariable(name = "id") Long id,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        postService.likePost(id, loginUser);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 게시글 좋아요 삭제
+     */
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<?> unlikePost(
+        @PathVariable(name = "id") Long id,
+        HttpServletRequest request) {
+
+        LoginUser loginUser = statusUtil.getLoginUser(request);
+        postService.unlikePost(id, loginUser);
+
+        return ResponseEntity.ok().build();
+    }
 }

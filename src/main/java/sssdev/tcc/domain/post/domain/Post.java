@@ -61,4 +61,19 @@ public class Post extends BaseEntity {
     public void updateContent(PostUpdateRequest request) {
         this.content = request.getContent();
     }
+
+    public void like(User user) {
+
+        PostLike postLike = PostLike
+            .builder()
+            .post(this)
+            .user(user)
+            .build();
+
+        postLikeList.add(postLike);
+    }
+
+    public void unlike(PostLike postLike) {
+        postLikeList.remove(postLike);
+    }
 }

@@ -8,6 +8,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -391,6 +392,55 @@ class PostControllerTest extends ControllerTest {
 
             // when && then
             mockMvc.perform(delete("/api/posts/{id}", post1.getId()))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk()
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("게시글 좋아요")
+    class PostLike {
+
+        @DisplayName("성공 케이스 - 게시글 좋아요 추가")
+        @Test
+        void like_post_success() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            // when && then
+            mockMvc.perform(post("/api/posts/{id}/like", post1.getId()))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk()
+                );
+        }
+
+        @DisplayName("성공 케이스 - 게시글 좋아요 삭제")
+        @Test
+        void unlike_post_success() throws Exception {
+            // given
+            User user = User.builder().username("username").build();
+            setField(user, "id", 1L);
+            LoginUser loginUser = new LoginUser(user.getId(), UserRole.USER);
+
+            Post post1 = Post.builder().content("content02").user(user).build();
+            setField(post1, "id", 1L);
+
+            given(statusUtil.getLoginUser(any(HttpServletRequest.class)))
+                .willReturn(loginUser);
+
+            // when && then
+            mockMvc.perform(delete("/api/posts/{id}/like", post1.getId()))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk()

@@ -79,7 +79,7 @@ public class CommentController {
     public ResponseEntity<?> deleteComments(@PathVariable(name = "id") Long id,
         HttpServletRequest servletRequest) {
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
-        commentService.deleteComment(id, loginUser);
+        commentService.deleteComments(id, loginUser);
 
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")

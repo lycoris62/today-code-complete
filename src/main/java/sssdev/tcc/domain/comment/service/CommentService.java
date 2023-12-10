@@ -125,4 +125,20 @@ public class CommentService {
 
         return new CommentResponse(user.getUsername(), comment.getContent(), likeStatus);
     }
+
+    public void deleteComments(Long id, LoginUser loginUser) {
+        Comment comment = commentRepository.findById(id).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_COMMENT)
+        );
+
+        User user = userRepository.findById(loginUser.id()).orElseThrow(
+            () -> new ServiceException(NOT_EXIST_USER)
+        );
+
+        if(!comment.getUser().equals(user)){
+            throw new ServiceException(CHECK_USER);
+        }
+
+        commentRepository.delete(comment);
+    }
 }

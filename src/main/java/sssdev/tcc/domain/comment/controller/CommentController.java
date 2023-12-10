@@ -102,7 +102,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{id}/like")
-    public ResponseEntity<?> cancleLikeComments(@PathVariable(name = "id") Long id,
+    public ResponseEntity<?> cancelLikeComments(@PathVariable(name = "id") Long id,
         HttpServletRequest servletRequest) {
         LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
         CommentResponse response = commentService.cancelLikeComments(id, loginUser);

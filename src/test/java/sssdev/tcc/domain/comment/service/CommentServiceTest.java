@@ -239,7 +239,7 @@ class CommentServiceTest {
 
         @Test
         @DisplayName("댓글 수정 실패 테스트 - 유저가 존재하지 않을 때")
-        void modify_connets_test_fail_user_is_not_exist() {
+        void modify_comments_test_fail_user_is_not_exist() {
             LoginUser loginUser = new LoginUser(2L, UserRole.USER);
             CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
 
@@ -256,6 +256,78 @@ class CommentServiceTest {
 
             assertThat(exception.getCode()).isEqualTo(NOT_EXIST_USER);
             assertThat(exception.getCode().getMessage()).isEqualTo("사용자가 없습니다.");
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제 테스트")
+    class delete_comments_test {
+
+        @Test
+        @DisplayName("댓글 삭제 성공 테스트")
+        void delete_comments_test_success() {
+            Long id = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+
+            Comment comment = Comment.builder().content("삭제할 댓글")
+                .user(user).post(post).build();
+
+            given(commentRepository.findById(id)).willReturn(Optional.of(comment));
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+
+            commentService.deleteComments(id, loginUser);
+
+            verify(commentRepository, times(1)).delete(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 테스트")
+    class like_comments_test {
+
+        @Test
+        @DisplayName("댓글 좋아요 성공 테스트")
+        void like_comments_test_success() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            User user1 = User.builder().username("좋아요 누르는 사람").build();
+            setField(user1, "id", 2L);
+
+            Comment comment = Comment.builder().content("좋아요 댓글").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+            given(userRepository.findById(user1.getId())).willReturn(Optional.of(user1));
+
+            CommentResponse commentResponse = commentService.likeComments(comment.getId(), loginUser);
+
+            assertThat(commentResponse.likeStatus()).isEqualTo(true);
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 취소 테스트")
+    class like_comments_cancel_test {
+
+        @Test
+        @DisplayName("댓글 좋아요 취소 성공 테스트")
+        void cancel_like_comments_test_success() {
+            LoginUser loginUser = new LoginUser(2L, UserRole.USER);
+            User user1 = User.builder().username("좋아요 취소 누르는 사람").build();
+            setField(user1, "id", 2L);
+
+            Comment comment = Comment.builder().content("좋아요 댓글").user(user).post(post).build();
+            setField(comment, "id", 1L);
+
+            CommentLike commentLike = CommentLike.builder().comment(comment).user(user1).build();
+
+            given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+            given(userRepository.findById(user1.getId())).willReturn(Optional.of(user1));
+            given(commentLikeRepoisoty.findByUserAndComment(user1,comment)).willReturn(commentLike);
+
+            CommentResponse response = commentService.cancelLikeComments(comment.getId(), loginUser);
+
+            verify(commentLikeRepoisoty, times(1)).delete(any());
+            assertThat(response.likeStatus()).isEqualTo(false);
         }
     }
 }

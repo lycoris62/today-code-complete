@@ -3,6 +3,7 @@ package sssdev.tcc.domain.comment.controller;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.dto.request.CommentCreateRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentModifyRequest;
 import sssdev.tcc.domain.comment.dto.request.CommentRequest;
@@ -210,6 +212,64 @@ class CommentControllerTest extends ControllerTest {
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("댓글 수정 성공"),
                     jsonPath("$.data.content").value("바뀐 댓글 내용")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제 기능")
+    class deleteComments {
+
+        @Test
+        @DisplayName("댓글 삭제 기능 성공 테스트")
+        void delete_comments_test_success() throws Exception {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            Long commentId = 1L;
+
+            mockMvc.perform(delete("/api/comments/{commentId}", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 삭제 성공")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 기능")
+    class likeComments {
+
+        @Test
+        @DisplayName("댓글 좋아요 기능 성공 테스트")
+        void like_comments_test_success() throws Exception {
+            Long commentId = 1L;
+
+            mockMvc.perform(post("/api/comments/{commentId}/like", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 좋아요 성공")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 좋아요 취소 기능")
+    class like_comments_delete {
+
+        @Test
+        @DisplayName("댓글 좋아요 취소 기능 성공 테스트")
+        void like_comments_delete_success_test() throws Exception {
+            Long commentId = 1L;
+
+            mockMvc.perform(delete("/api/comments/{commentId}/like",commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 좋아요 취소 성공")
                 );
         }
     }

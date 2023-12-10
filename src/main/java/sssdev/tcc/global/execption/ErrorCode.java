@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     // comment 3XXX
     NOT_EXIST_COMMENT(HttpStatus.NOT_FOUND, "3000", "댓글이 없습니다."),
+    YOUR_COMMENT(HttpStatus.BAD_REQUEST, "3001", "자신의 댓글에는 좋아요가 불가능합니다."),
     // admin 4XXX
 
     // global 5XXX

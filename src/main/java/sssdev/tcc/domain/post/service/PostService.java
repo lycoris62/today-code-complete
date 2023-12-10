@@ -117,6 +117,7 @@ public class PostService {
     /**
      * 게시글 삭제
      */
+    @Transactional
     public void delete(Long id, LoginUser loginUser) {
 
         Post post = postRepository.findById(id)

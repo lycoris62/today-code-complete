@@ -1,6 +1,6 @@
 package sssdev.tcc.domain.user.domain;
 
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -23,7 +23,7 @@ class UserTest {
         var followerCount = 1L;
 
         var userId = 1L;
-        var user = User.builder().password("test").username("username").profileUrl("/api/test.png")
+        var user = User.builder().username("username").profileUrl("/api/test.png")
             .description("description").nickname("핑크 공주").build();
         setField(user, "id", userId);
 
@@ -42,7 +42,7 @@ class UserTest {
         var followingCount = 10L;
 
         var userId = 1L;
-        var user = User.builder().password("test").username("username").profileUrl("/api/test.png")
+        var user = User.builder().username("username").profileUrl("/api/test.png")
             .description("description").nickname("핑크 공주").build();
         setField(user, "id", userId);
 
@@ -57,11 +57,11 @@ class UserTest {
     @Test
     void follow() {
         // given
-        var from = User.builder().password("test").username("username").profileUrl("/api/test.png")
+        var from = User.builder().username("username").profileUrl("/api/test.png")
             .description("description").nickname("핑크 공주").build();
         setField(from, "id", 1L);
 
-        var to = User.builder().password("test").username("username").profileUrl("/api/test.png")
+        var to = User.builder().username("username").profileUrl("/api/test.png")
             .description("description").nickname("핑크 공주").build();
         setField(to, "id", 2L);
         // when

@@ -18,9 +18,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import sssdev.tcc.domain.user.dto.request.ProfileUpdateRequest;
+import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.domain.user.dto.request.UserFollowRequest;
 import sssdev.tcc.domain.user.dto.request.UserFollowResponse;
+import sssdev.tcc.domain.user.dto.request.UserProfileUpdateRequest;
+import sssdev.tcc.domain.user.dto.request.UserProfileUrlUpdateRequest;
 import sssdev.tcc.domain.user.dto.response.ProfileResponse;
 import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
@@ -97,12 +99,9 @@ class UserControllerTest extends ControllerTest {
             var followerCount = 10L;
             var followingCount = 11L;
             var response = new UserFollowResponse(toUserId, followerCount, followingCount);
-
-            var loginUser = LoginUser.builder()
-                .id(fromUserId)
-                .build();
             given(userService.follow(request)).willReturn(response);
-            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
+            given(statusUtil.getLoginUser(any())).willReturn(
+                new LoginUser(fromUserId, UserRole.USER));
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -127,12 +126,9 @@ class UserControllerTest extends ControllerTest {
             var toUserId = 2L;
             var request = new UserFollowRequest(fromUserId, toUserId);
 
-            var loginUser = LoginUser.builder()
-                .id(fromUserId)
-                .build();
-
             given(userService.follow(request)).willThrow(new ServiceException(NOT_EXIST_USER));
-            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
+            given(statusUtil.getLoginUser(any())).willReturn(
+                new LoginUser(fromUserId, UserRole.USER));
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -155,12 +151,9 @@ class UserControllerTest extends ControllerTest {
             var toUserId = 2L;
             var request = new UserFollowRequest(fromUserId, toUserId);
 
-            var loginUser = LoginUser.builder()
-                .id(fromUserId)
-                .build();
-
             given(userService.follow(request)).willThrow(new ServiceException(UNAUTHORIZED));
-            given(statusUtil.getLoginUser(any())).willReturn(loginUser);
+            given(statusUtil.getLoginUser(any())).willReturn(
+                new LoginUser(loginUserId, UserRole.USER));
             // when // then
             mockMvc.perform(post("/api/users/follow")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -186,12 +179,13 @@ class UserControllerTest extends ControllerTest {
             var userId = 1L;
             var response = new ProfileResponse(1L, "test2", 100L, 200L, "/api/test/image.png",
                 "description2");
-            var request = new ProfileUpdateRequest("test2", "description2");
+            var request = new UserProfileUpdateRequest("test2", "description2");
 
             String json = objectMapper.writeValueAsString(request);
 
             var loginUser = LoginUser.builder()
                 .id(userId)
+                .role(UserRole.USER)
                 .build();
 
             given(userService.updateProfile(request, userId)).willReturn(response);
@@ -222,14 +216,14 @@ class UserControllerTest extends ControllerTest {
         void fail_1() throws Exception {
 
             var userId = 1L;
-            var requst = new ProfileUpdateRequest("test2", null);
+            var request = new UserProfileUpdateRequest("test2", null);
             var loginUser = LoginUser.builder()
                 .id(userId)
                 .build();
 
-            String json = objectMapper.writeValueAsString(requst);
+            String json = objectMapper.writeValueAsString(request);
 
-            given(userService.updateProfile(requst, userId)).willThrow(
+            given(userService.updateProfile(request, userId)).willThrow(
                 new ServiceException(CHECK_USER));
             given(statusUtil.getLoginUser(any())).willReturn(loginUser);
             // when // then
@@ -248,7 +242,7 @@ class UserControllerTest extends ControllerTest {
         }
     }
 
-    @DisplayName("로그인 API")
+    @DisplayName("로그아웃")
     @Nested
     class Logout {
 
@@ -258,6 +252,46 @@ class UserControllerTest extends ControllerTest {
             // given
             // when // then
             mockMvc.perform(post("/api/users/logout")
+                )
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("성공했습니다.")
+                );
+        }
+    }
+
+    @DisplayName("프로필 링크 업데이트")
+    @Nested
+    class profileUrl {
+
+        @DisplayName("성공 케이스")
+        @Test
+        void success() throws Exception {
+            // given
+            var userId = 1L;
+            var request = new UserProfileUrlUpdateRequest("/api/test/imag2e.png");
+
+            var loginUser = LoginUser.builder()
+                .id(userId)
+                .role(UserRole.USER)
+                .build();
+
+            var response = new ProfileResponse(1L, "test2", 100L, 200L, "/api/test/imag2e.png",
+                "description2");
+            String json = objectMapper.writeValueAsString(request);
+
+            given(userService.updateProfileUrl(request, userId)).willReturn(response);
+            given(statusUtil.getLoginUser(any())).willReturn(
+                new LoginUser(userId, UserRole.USER));
+            // when // then
+            System.out.println(loginUser.id());
+            mockMvc.perform(patch("/api/users/profileUrl")
+                    .content(json)
+                    .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .sessionAttr("login_user", loginUser)
                 )
                 .andDo(print())
                 .andExpectAll(

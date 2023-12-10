@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
 import sssdev.tcc.domain.model.BaseEntity;
+import sssdev.tcc.domain.post.dto.request.PostUpdateRequest;
 import sssdev.tcc.domain.post.repository.PostLikeRepository;
 import sssdev.tcc.domain.user.domain.User;
 
@@ -55,5 +56,9 @@ public class Post extends BaseEntity {
 
     public boolean getIsLike(PostLikeRepository repository) {
         return repository.existsByUserIdAndPostId(user.getId(), getId());
+    }
+
+    public void updateContent(PostUpdateRequest request) {
+        this.content = request.getContent();
     }
 }

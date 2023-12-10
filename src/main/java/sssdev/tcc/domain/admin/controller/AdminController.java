@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sssdev.tcc.domain.admin.dto.ProfileListItem;
+import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
+import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
 import sssdev.tcc.domain.comment.service.CommentService;
@@ -33,7 +35,7 @@ public class AdminController {
 
     @PatchMapping("/users")
     public ResponseEntity<?> updateProfile(@RequestBody AdminUserUpdateRequest body) {
-        AdminUserUpdateResponse response = userService.updateProfile(body);
+        AdminUserUpdateResponse response = userService.updateProfileAdmin(body);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
@@ -44,7 +46,7 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<?> getUserList(Pageable pageable,
         @RequestBody AdminUserListGetRequest request) {
-        Page<ProfileListItem> body = userService.getProfileList(request, pageable);
+        Page<ProfileListItem> body = userService.getProfileListAdmin(request, pageable);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
@@ -55,16 +57,27 @@ public class AdminController {
 
     @DeleteMapping("/comments/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable(name = "id") Long id) {
-        commentService.deleteComment(id);
+        commentService.deleteCommentAdmin(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
             .build());
     }
 
+    @PatchMapping("/comments/{id}")
+    public ResponseEntity<?> updateComment(@PathVariable(name = "id") Long id,
+        @RequestBody AdminCommetUpdateRequest request) {
+        AdminCommentUpdateResponse body = commentService.updateCommentAdmin(id, request);
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("성공했습니다.")
+            .data(body)
+            .build());
+    }
+
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<?> deletePost(@PathVariable(name = "id") Long id) {
-        commentService.deletePost(id);
+        postService.deletePostAdmin(id);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")
@@ -74,7 +87,7 @@ public class AdminController {
     @PatchMapping("/posts/{id}")
     public ResponseEntity<?> updatePost(@PathVariable(name = "id") Long id,
         @RequestBody AdminPostUpdateRequest request) {
-        AdminPostUpdateResponse body = postService.updatePost(id, request);
+        AdminPostUpdateResponse body = postService.updatePostAdmin(id, request);
         return ResponseEntity.ok(RootResponse.builder()
             .code("200")
             .message("성공했습니다.")

@@ -57,8 +57,7 @@ public class CommentService {
                     }
                 }
             }
-            response = new CommentResponse(comment.getUser().getUsername(), comment.getContent(),
-                likeStatus);
+            response = new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
             responseList.add(response);
         }
         return responseList;
@@ -109,8 +108,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse modifyComments(Long id, CommentModifyRequest request,
-        LoginUser loginUser) {
+    public CommentResponse modifyComments(Long id, CommentModifyRequest request, LoginUser loginUser) {
         Comment comment = commentRepository.findById(id).orElseThrow(
             () -> new ServiceException(NOT_EXIST_COMMENT)
         );
@@ -127,7 +125,7 @@ public class CommentService {
 
         comment.updateComment(request.content());
 
-        return new CommentResponse(user.getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(user.getNickname(), comment.getContent(), likeStatus);
     }
 
     public void deleteComments(Long id, LoginUser loginUser) {
@@ -166,7 +164,7 @@ public class CommentService {
 
         commentLikeRepoisoty.save(commentLike);
 
-        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
     }
 
     public CommentResponse cancelLikeComments(Long id, LoginUser loginUser) {
@@ -185,8 +183,6 @@ public class CommentService {
 
         commentLikeRepoisoty.delete(commentLike);
 
-        return new CommentResponse(comment.getUser().getUsername(), comment.getContent(), likeStatus);
+        return new CommentResponse(comment.getUser().getNickname(), comment.getContent(), likeStatus);
     }
-
-
 }

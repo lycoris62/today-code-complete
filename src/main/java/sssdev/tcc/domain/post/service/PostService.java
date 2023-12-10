@@ -117,6 +117,7 @@ public class PostService {
     /**
      * 게시글 삭제
      */
+    @Transactional
     public void delete(Long id, LoginUser loginUser) {
 
         Post post = postRepository.findById(id)
@@ -131,6 +132,35 @@ public class PostService {
         if (!post.getUser().getId().equals(loginUser.id())) {
             throw new ServiceException(UNAUTHORIZED);
         }
+    }
+
+    /**
+     * 게시글 좋아요 추가
+     */
+    @Transactional
+    public void likePost(Long id, LoginUser loginUser) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        User user = userRepository.findById(loginUser.id())
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_USER));
+
+        post.like(user);
+    }
+
+    /**
+     * 게시글 좋아요 삭제
+     */
+    @Transactional
+    public void unlikePost(Long id, LoginUser loginUser) {
+
+        Post post = postRepository.findById(id)
+            .orElseThrow(() -> new ServiceException(NOT_EXIST_POST));
+
+        postLikeRepository
+            .findByUserIdAndPostId(loginUser.id(), id)
+            .ifPresent(post::unlike);
     }
 
     // todo

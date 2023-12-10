@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
+import sssdev.tcc.domain.admin.dto.request.AdminCommentUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.comment.domain.Comment;
 import sssdev.tcc.domain.comment.repository.CommentRepository;
@@ -49,7 +49,7 @@ class CommentAdminServiceTest {
             Comment comment = Comment.builder().content("댓글 내용 ").user(user).post(post1).build();
             setField(comment, "id", 1L);
 
-            AdminCommetUpdateRequest requestDto = new AdminCommetUpdateRequest(1L, "content02");
+            AdminCommentUpdateRequest requestDto = new AdminCommentUpdateRequest(1L, "content02");
 
             given(commentRepository.findById(post1.getId())).willReturn(Optional.of(comment));
 
@@ -72,7 +72,7 @@ class CommentAdminServiceTest {
             Comment comment = Comment.builder().content("댓글 내용 ").user(user).post(post1).build();
             setField(comment, "id", 1L);
 
-            AdminCommetUpdateRequest requestDto = new AdminCommetUpdateRequest(1L, "content02");
+            AdminCommentUpdateRequest requestDto = new AdminCommentUpdateRequest(1L, "content02");
 
             given(commentRepository.findById(post1.getId()))
                 .willThrow(new ServiceException(NOT_EXIST_COMMENT));

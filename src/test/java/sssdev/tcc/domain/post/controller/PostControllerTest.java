@@ -42,6 +42,7 @@ import sssdev.tcc.global.execption.ServiceException;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
 
+
 @DisplayName("Post API 테스트")
 class PostControllerTest extends ControllerTest {
 

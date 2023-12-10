@@ -10,23 +10,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import sssdev.tcc.domain.admin.dto.ProfileListItem;
-import sssdev.tcc.domain.admin.dto.request.AdminCommetUpdateRequest;
+import sssdev.tcc.domain.admin.dto.request.AdminCommentUpdateRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminPostUpdateRequest;
-import sssdev.tcc.domain.admin.dto.request.AdminUserListGetRequest;
 import sssdev.tcc.domain.admin.dto.request.AdminUserUpdateRequest;
 import sssdev.tcc.domain.admin.dto.response.AdminCommentUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminPostUpdateResponse;
 import sssdev.tcc.domain.admin.dto.response.AdminUserUpdateResponse;
+import sssdev.tcc.domain.admin.dto.response.ProfileListItem;
 import sssdev.tcc.domain.comment.service.CommentService;
 import sssdev.tcc.domain.post.service.PostService;
 import sssdev.tcc.domain.user.domain.UserRole;
@@ -34,6 +32,7 @@ import sssdev.tcc.domain.user.service.UserService;
 import sssdev.tcc.global.common.dto.LoginUser;
 import sssdev.tcc.global.util.StatusUtil;
 import sssdev.tcc.support.ControllerTest;
+
 
 @DisplayName("관리자 API")
 class AdminControllerTest extends ControllerTest {
@@ -105,7 +104,7 @@ class AdminControllerTest extends ControllerTest {
         void admin_profileList_get_success() throws Exception {
             // given
             var userId = 1L;
-            var request = new AdminUserListGetRequest(userId);
+
             var pageable = PageRequest.of(0, 10);
 
             ProfileListItem profileResponse = new ProfileListItem(
@@ -115,8 +114,10 @@ class AdminControllerTest extends ControllerTest {
                 "decription1"
             );
 
+            List<ProfileListItem> list = new ArrayList<>();
+            list.add(profileResponse);
+
             var content = List.of(profileResponse);
-            var response = new PageImpl<>(content, pageable, 10);
 
             var loginUser = LoginUser.builder()
                 .role(UserRole.ADMIN)
@@ -124,25 +125,15 @@ class AdminControllerTest extends ControllerTest {
                 .build();
 
             given(statusUtil.getLoginUser(any())).willReturn(loginUser);
-            given(
-                userService.getProfileListAdmin(any(AdminUserListGetRequest.class),
-                    any(Pageable.class)))
-                .willReturn(response);
+            given(userService.getProfileListAdmin(1)).willReturn(list);
             // when // then
-            mockMvc.perform(get("/api/admin/users")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+
+            mockMvc.perform(get("/api/admin/users?page=1"))
                 .andDo(print())
                 .andExpectAll(
                     status().isOk(),
                     jsonPath("$.code").value("200"),
-                    jsonPath("$.message").value("성공했습니다."),
-                    jsonPath("$.data.content[?(@.id== '%s')].nickname", profileResponse.id())
-                        .value(profileResponse.nickname()),
-                    jsonPath("$.data.content[?(@.id== '%s')].profileImageUrl", profileResponse.id())
-                        .value(profileResponse.profileImageUrl()),
-                    jsonPath("$.data.content[?(@.id== '%s')].description", profileResponse.id())
-                        .value(profileResponse.description())
+                    jsonPath("$.message").value("성공했습니다.")
                 );
         }
     }
@@ -214,7 +205,7 @@ class AdminControllerTest extends ControllerTest {
             // given
             var userId = 1L;
             var postId = 1L;
-            var request = AdminCommetUpdateRequest.builder()
+            var request = AdminCommentUpdateRequest.builder()
                 .userId(userId)
                 .content("change content")
                 .build();

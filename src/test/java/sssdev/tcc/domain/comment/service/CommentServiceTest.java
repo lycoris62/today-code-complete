@@ -239,7 +239,7 @@ class CommentServiceTest {
 
         @Test
         @DisplayName("댓글 수정 실패 테스트 - 유저가 존재하지 않을 때")
-        void modify_connets_test_fail_user_is_not_exist() {
+        void modify_comments_test_fail_user_is_not_exist() {
             LoginUser loginUser = new LoginUser(2L, UserRole.USER);
             CommentModifyRequest request = new CommentModifyRequest("수정된 댓글 내용");
 
@@ -256,6 +256,28 @@ class CommentServiceTest {
 
             assertThat(exception.getCode()).isEqualTo(NOT_EXIST_USER);
             assertThat(exception.getCode().getMessage()).isEqualTo("사용자가 없습니다.");
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제 테스트")
+    class delete_comments_test {
+
+        @Test
+        @DisplayName("댓글 삭제 성공 테스트")
+        void delete_comments_test_success() {
+            Long id = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+
+            Comment comment = Comment.builder().content("삭제할 댓글")
+                .user(user).post(post).build();
+
+            given(commentRepository.findById(id)).willReturn(Optional.of(comment));
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user));
+
+            commentService.deleteComments(id, loginUser);
+
+            verify(commentRepository, times(1)).delete(any());
         }
     }
 }

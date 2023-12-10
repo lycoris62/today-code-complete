@@ -2,6 +2,7 @@ package sssdev.tcc.domain.comment.controller;
 
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -209,6 +210,26 @@ class CommentControllerTest extends ControllerTest {
                     jsonPath("$.code").value("200"),
                     jsonPath("$.message").value("댓글 수정 성공"),
                     jsonPath("$.data.content").value("바뀐 댓글 내용")
+                );
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제 기능")
+    class deleteComments {
+
+        @Test
+        @DisplayName("댓글 삭제 기능 성공 테스트")
+        void delete_comments_test_success() throws Exception {
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            Long commentId = 1L;
+
+            mockMvc.perform(delete("/api/comments/{commentId}", commentId))
+                .andDo(print())
+                .andExpectAll(
+                    status().isOk(),
+                    jsonPath("$.code").value("200"),
+                    jsonPath("$.message").value("댓글 삭제 성공")
                 );
         }
     }

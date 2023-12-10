@@ -97,6 +97,21 @@ public class CommentController {
             .code("200")
             .message("댓글 좋아요 성공")
             .data(response)
-            .build());
+            .build()
+        );
+    }
+
+    @DeleteMapping("/comments/{id}/like")
+    public ResponseEntity<?> cancleLikeComments(@PathVariable(name = "id") Long id,
+        HttpServletRequest servletRequest) {
+        LoginUser loginUser = statusUtil.getLoginUser(servletRequest);
+        CommentResponse response = commentService.cancleLikeComments(id, loginUser);
+
+        return ResponseEntity.ok(RootResponse.builder()
+            .code("200")
+            .message("댓글 좋아요 취소 성공")
+            .data(response)
+            .build()
+        );
     }
 }

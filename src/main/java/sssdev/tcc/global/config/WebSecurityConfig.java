@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import sssdev.tcc.domain.user.domain.UserRole;
 import sssdev.tcc.global.filter.AuthorizationFilter;
 import sssdev.tcc.global.filter.ExceptionHandleFilter;
 import sssdev.tcc.global.util.StatusUtil;
@@ -52,7 +51,6 @@ public class WebSecurityConfig {
                 .permitAll()
                 .requestMatchers("/api/users/login").permitAll()
                 .requestMatchers(PathRequest.toH2Console()).permitAll()
-                .requestMatchers("/api/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
 

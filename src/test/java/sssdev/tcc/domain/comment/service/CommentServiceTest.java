@@ -1,5 +1,6 @@
 package sssdev.tcc.domain.comment.service;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -278,6 +279,58 @@ class CommentServiceTest {
             commentService.deleteComments(id, loginUser);
 
             verify(commentRepository, times(1)).delete(any());
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 기능 실패 테스트 - 댓글이 존재하지 않을 때")
+        void delete_comments_test_fail_not_exist_comment() {
+            Long id = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+
+            given(commentRepository.findById(id)).willReturn(Optional.empty());
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.deleteComments(id, loginUser));
+
+            assertThat(exception.getCode()).isEqualTo(NOT_EXIST_COMMENT);
+            assertThat(exception.getCode().getCode()).isEqualTo("3000");
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 기능 실패 테스트 - User가 존재하지 않을 때")
+        void delete_comments_test_fail_not_exist_user() {
+            Long id = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            Comment comment = Comment.builder().user(user).post(post).content("댓글내용").build();
+
+            given(commentRepository.findById(id)).willReturn(Optional.of(comment));
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.empty());
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.deleteComments(id, loginUser));
+
+            assertThat(exception.getCode()).isEqualTo(NOT_EXIST_USER);
+            assertThat(exception.getCode().getCode()).isEqualTo("1000");
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 기능 실패 테스트 - 자신의 댓글이 아닐 때")
+        void delete_comments_test_fail_check_user() {
+            Long id = 1L;
+            LoginUser loginUser = new LoginUser(1L, UserRole.USER);
+            Comment comment = Comment.builder().user(user).post(post).content("댓글내용").build();
+            User user1 = User.builder().username("댓글 지우려는 사람").build();
+            setField(user1, "id", 2L);
+
+
+            given(commentRepository.findById(id)).willReturn(Optional.of(comment));
+            given(userRepository.findById(loginUser.id())).willReturn(Optional.of(user1));
+
+            ServiceException exception = assertThrows(ServiceException.class,
+                () -> commentService.deleteComments(id, loginUser));
+
+            assertThat(exception.getCode()).isEqualTo(CHECK_USER);
+            assertThat(exception.getCode().getCode()).isEqualTo("1001");
         }
     }
 
